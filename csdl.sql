@@ -89,6 +89,7 @@ CREATE TABLE `hoatdong` (
   `TrangThai` tinyint(4) DEFAULT 1,
   `NguoiTaoId` int(11) DEFAULT NULL,
   `NgayTao` datetime DEFAULT current_timestamp(),
+  `DuongDanMinhChung` text DEFAULT NULL,
   FOREIGN KEY (`NguoiTaoId`) REFERENCES `nguoidung`(`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

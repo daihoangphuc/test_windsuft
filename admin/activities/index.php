@@ -87,6 +87,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                     <th scope="col" class="px-6 py-3">Số lượng</th>
                     <th scope="col" class="px-6 py-3">Người tạo</th>
                     <th scope="col" class="px-6 py-3">Trạng thái</th>
+                    <th scope="col" class="px-6 py-3">Minh chứng</th>
                     <th scope="col" class="px-6 py-3">
                         <span class="sr-only">Thao tác</span>
                     </th>
@@ -100,43 +101,29 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                     </th>
                     <td class="px-6 py-4">
                         <?php 
-                        echo date('d/m/Y H:i', strtotime($activity['NgayBatDau'])) . ' - <br>' . 
-                             date('d/m/Y H:i', strtotime($activity['NgayKetThuc'])); 
+                        echo date('d/m/Y H:i', strtotime($activity['NgayBatDau'])) . ' - ';
+                        echo date('d/m/Y H:i', strtotime($activity['NgayKetThuc']));
                         ?>
                     </td>
                     <td class="px-6 py-4"><?php echo htmlspecialchars($activity['DiaDiem']); ?></td>
-                    <td class="px-6 py-4">
-                        <?php echo $activity['SoLuongDangKy'] . '/' . $activity['SoLuong']; ?>
-                        <br>
-                        <span class="text-xs text-gray-500">
-                            (Tham gia: <?php echo $activity['SoLuongThamGia']; ?>)
-                        </span>
-                    </td>
+                    <td class="px-6 py-4"><?php echo $activity['SoLuong']; ?></td>
                     <td class="px-6 py-4"><?php echo htmlspecialchars($activity['NguoiTao']); ?></td>
                     <td class="px-6 py-4">
-                        <?php
-                        $status_class = '';
-                        $status_text = '';
-                        switch ($activity['TrangThai']) {
-                            case 0:
-                                $status_class = 'text-red-500';
-                                $status_text = 'Đã hủy';
-                                break;
-                            case 1:
-                                if (strtotime($activity['NgayKetThuc']) < time()) {
-                                    $status_class = 'text-gray-500';
-                                    $status_text = 'Đã kết thúc';
-                                } elseif (strtotime($activity['NgayBatDau']) > time()) {
-                                    $status_class = 'text-blue-500';
-                                    $status_text = 'Sắp diễn ra';
-                                } else {
-                                    $status_class = 'text-green-500';
-                                    $status_text = 'Đang diễn ra';
-                                }
-                                break;
-                        }
-                        ?>
-                        <span class="<?php echo $status_class; ?>"><?php echo $status_text; ?></span>
+                        <span class="px-2 py-1 text-xs font-semibold rounded <?php echo $activity['TrangThai'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
+                            <?php echo $activity['TrangThai'] ? 'Hoạt động' : 'Không hoạt động'; ?>
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <?php if (!empty($activity['DuongDanMinhChung'])): ?>
+                            <a href="<?php echo '../../' . $activity['DuongDanMinhChung']; ?>" target="_blank" 
+                               class="text-blue-600 hover:text-blue-900">
+                                <i class="fas fa-file-alt"></i> Xem
+                            </a>
+                        <?php endif; ?>
+                        <button onclick="openEvidenceModal(<?php echo $activity['Id']; ?>)" 
+                                class="text-blue-600 hover:text-blue-900 ml-2">
+                            <i class="fas fa-upload"></i> Cập nhật
+                        </button>
                     </td>
                     <td class="px-6 py-4 text-right space-x-2">
                         <a href="manage_attendance.php?id=<?php echo $activity['Id']; ?>" class="font-medium text-blue-600 hover:underline">
@@ -378,6 +365,45 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
     </div>
 </div>
 
+<!-- Thêm Modal cập nhật minh chứng -->
+<div id="evidenceModal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full flex items-center justify-center">
+    <div class="relative w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow">
+            <div class="flex items-start justify-between p-4 border-b rounded-t">
+                <h3 class="text-xl font-semibold text-gray-900">
+                    Cập nhật minh chứng
+                </h3>
+                <button type="button" onclick="closeEvidenceModal()" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center">
+                    <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="evidenceForm" enctype="multipart/form-data">
+                <input type="hidden" name="activity_id" id="evidenceActivityId">
+                <div class="p-6 space-y-6">
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900">
+                            Tải lên file minh chứng
+                        </label>
+                        <input type="file" name="evidence" accept=".pdf,.doc,.docx" required
+                               class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
+                        <p class="mt-1 text-sm text-gray-500">Chấp nhận file PDF, DOC hoặc DOCX (Tối đa 10MB)</p>
+                    </div>
+                </div>
+                <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                        Cập nhật
+                    </button>
+                    <button type="button" onclick="closeEvidenceModal()" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
+                        Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function deleteActivity(id) {
     if (confirm('Bạn có chắc chắn muốn xóa hoạt động này?')) {
@@ -499,6 +525,42 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
     })
     .catch(error => {
         alert('Có lỗi xảy ra');
+    });
+});
+
+// Thêm các hàm xử lý modal minh chứng
+function openEvidenceModal(activityId) {
+    document.getElementById('evidenceActivityId').value = activityId;
+    document.getElementById('evidenceModal').classList.remove('hidden');
+}
+
+function closeEvidenceModal() {
+    document.getElementById('evidenceModal').classList.add('hidden');
+    document.getElementById('evidenceForm').reset();
+}
+
+// Xử lý submit form minh chứng
+document.getElementById('evidenceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('update_evidence.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi cập nhật minh chứng!');
     });
 });
 </script>

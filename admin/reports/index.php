@@ -132,29 +132,37 @@ ob_start();
 <?php require_once __DIR__ . '/../../layouts/admin_header.php'; ?>
 
 <div class="p-4">
-    <div class="bg-white shadow rounded-lg p-4">
+    <div class="mb-6">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">Báo cáo thống kê</h2>
-            <a href="export.php?startDate=<?php echo $startDate; ?>&endDate=<?php echo $endDate; ?>" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">
-                Xuất báo cáo
-            </a>
+            <h2 class="text-2xl font-bold text-gray-900">Báo cáo thống kê</h2>
+            <div class="flex items-center gap-4">
+                <button onclick="exportReport()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded inline-flex items-center">
+                    <i class="fas fa-file-excel mr-2"></i>
+                    Xuất báo cáo
+                </button>
+            </div>
         </div>
 
         <!-- Filter Form -->
-        <form action="" method="GET" class="mb-4">
-            <div class="grid md:grid-cols-3 gap-4">
+        <form id="filterForm" class="bg-white shadow-md rounded-lg p-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label for="startDate" class="block mb-2 text-sm font-medium text-gray-900">Từ ngày</label>
-                    <input type="date" name="startDate" id="startDate" value="<?php echo $startDate; ?>" 
-                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Từ ngày
+                    </label>
+                    <input type="date" name="startDate" value="<?php echo $startDate; ?>"
+                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label for="endDate" class="block mb-2 text-sm font-medium text-gray-900">Đến ngày</label>
-                    <input type="date" name="endDate" id="endDate" value="<?php echo $endDate; ?>"
-                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Đến ngày
+                    </label>
+                    <input type="date" name="endDate" value="<?php echo $endDate; ?>"
+                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded">
+                        <i class="fas fa-filter mr-2"></i>
                         Lọc
                     </button>
                 </div>
@@ -260,6 +268,21 @@ new Chart(taskCtx, {
     options: {
         responsive: true
     }
+});
+</script>
+
+<script>
+function exportReport() {
+    const startDate = document.querySelector('input[name="startDate"]').value;
+    const endDate = document.querySelector('input[name="endDate"]').value;
+    window.location.href = `export.php?startDate=${startDate}&endDate=${endDate}`;
+}
+
+document.getElementById('filterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const startDate = this.elements.startDate.value;
+    const endDate = this.elements.endDate.value;
+    window.location.href = `index.php?startDate=${startDate}&endDate=${endDate}`;
 });
 </script>
 

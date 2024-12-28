@@ -1,6 +1,13 @@
 <?php
 require_once '../../config/database.php';
 require_once '../../utils/functions.php';
+require_once '../../vendor/autoload.php'; // Thêm autoload cho PhpSpreadsheet
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 // Check if user is logged in and is admin
 session_start();
@@ -17,14 +24,33 @@ try {
     $startDate = isset($_GET['startDate']) ? $_GET['startDate'] : date('Y-m-01');
     $endDate = isset($_GET['endDate']) ? $_GET['endDate'] : date('Y-m-t');
 
-    // Prepare data for Excel export
-    $data = [];
-    
-    // Add report header
-    $data[] = ['BÁO CÁO TỔNG HỢP'];
-    $data[] = ['Từ ngày: ' . format_date($startDate)];
-    $data[] = ['Đến ngày: ' . format_date($endDate)];
-    $data[] = [''];
+    // Create new Spreadsheet object
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Set default font
+    $spreadsheet->getDefaultStyle()->getFont()->setName('Arial')->setSize(11);
+
+    // Set column widths
+    $sheet->getColumnDimension('A')->setWidth(20);
+    $sheet->getColumnDimension('B')->setWidth(30);
+    $sheet->getColumnDimension('C')->setWidth(20);
+    $sheet->getColumnDimension('D')->setWidth(40);
+    $sheet->getColumnDimension('E')->setWidth(20);
+
+    // Add title
+    $sheet->setCellValue('A1', 'BÁO CÁO TỔNG HỢP');
+    $sheet->mergeCells('A1:E1');
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+    $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+    // Add date range
+    $sheet->setCellValue('A2', 'Từ ngày: ' . format_date($startDate));
+    $sheet->setCellValue('A3', 'Đến ngày: ' . format_date($endDate));
+    $sheet->mergeCells('A2:E2');
+    $sheet->mergeCells('A3:E3');
+
+    $currentRow = 5;
 
     // 1. Member Statistics
     $memberStats = $conn->query("
@@ -35,112 +61,114 @@ try {
         WHERE NgayTao <= '$endDate'
     ")->fetch_assoc();
 
-    $data[] = ['THỐNG KÊ THÀNH VIÊN'];
-    $data[] = ['Tổng số thành viên', number_format($memberStats['total_members'])];
-    $data[] = ['Thành viên mới (30 ngày)', number_format($memberStats['new_members'])];
-    $data[] = [''];
+    $sheet->setCellValue('A' . $currentRow, 'THỐNG KÊ THÀNH VIÊN');
+    $sheet->mergeCells('A' . $currentRow . ':E' . $currentRow);
+    $sheet->getStyle('A' . $currentRow)->getFont()->setBold(true);
+    $currentRow++;
 
-    // 2. Task Statistics
-    $taskStats = $conn->query("
+    $sheet->setCellValue('A' . $currentRow, 'Tổng số thành viên');
+    $sheet->setCellValue('B' . $currentRow, number_format($memberStats['total_members']));
+    $currentRow++;
+
+    $sheet->setCellValue('A' . $currentRow, 'Thành viên mới (30 ngày)');
+    $sheet->setCellValue('B' . $currentRow, number_format($memberStats['new_members']));
+    $currentRow += 2;
+
+    // 2. Activity Statistics
+    $activityStats = $conn->query("
         SELECT 
-            COUNT(*) as total_tasks,
-            COUNT(CASE WHEN TrangThai = 0 THEN 1 END) as pending_tasks,
-            COUNT(CASE WHEN TrangThai = 1 THEN 1 END) as in_progress_tasks,
-            COUNT(CASE WHEN TrangThai = 2 THEN 1 END) as completed_tasks
-        FROM nhiemvu
+            COUNT(*) as total_activities,
+            COUNT(CASE WHEN NOW() < NgayBatDau THEN 1 END) as upcoming_activities,
+            COUNT(CASE WHEN NOW() BETWEEN NgayBatDau AND NgayKetThuc THEN 1 END) as ongoing_activities,
+            COUNT(CASE WHEN NOW() > NgayKetThuc THEN 1 END) as completed_activities
+        FROM hoatdong
         WHERE NgayTao BETWEEN '$startDate' AND '$endDate'
     ")->fetch_assoc();
 
-    $data[] = ['THỐNG KÊ NHIỆM VỤ'];
-    $data[] = ['Tổng số nhiệm vụ', number_format($taskStats['total_tasks'])];
-    $data[] = ['Chờ xử lý', number_format($taskStats['pending_tasks'])];
-    $data[] = ['Đang thực hiện', number_format($taskStats['in_progress_tasks'])];
-    $data[] = ['Hoàn thành', number_format($taskStats['completed_tasks'])];
-    $data[] = [''];
+    $sheet->setCellValue('A' . $currentRow, 'THỐNG KÊ HOẠT ĐỘNG');
+    $sheet->mergeCells('A' . $currentRow . ':E' . $currentRow);
+    $sheet->getStyle('A' . $currentRow)->getFont()->setBold(true);
+    $currentRow++;
 
-    // 3. Financial Statistics
-    $financeStats = $conn->query("
+    $sheet->setCellValue('A' . $currentRow, 'Tổng số hoạt động');
+    $sheet->setCellValue('B' . $currentRow, number_format($activityStats['total_activities']));
+    $currentRow++;
+
+    $sheet->setCellValue('A' . $currentRow, 'Sắp diễn ra');
+    $sheet->setCellValue('B' . $currentRow, number_format($activityStats['upcoming_activities']));
+    $currentRow++;
+
+    $sheet->setCellValue('A' . $currentRow, 'Đang diễn ra');
+    $sheet->setCellValue('B' . $currentRow, number_format($activityStats['ongoing_activities']));
+    $currentRow++;
+
+    $sheet->setCellValue('A' . $currentRow, 'Đã kết thúc');
+    $sheet->setCellValue('B' . $currentRow, number_format($activityStats['completed_activities']));
+    $currentRow += 2;
+
+    // 3. Detailed Activity List
+    $sheet->setCellValue('A' . $currentRow, 'CHI TIẾT HOẠT ĐỘNG');
+    $sheet->mergeCells('A' . $currentRow . ':E' . $currentRow);
+    $sheet->getStyle('A' . $currentRow)->getFont()->setBold(true);
+    $currentRow++;
+
+    // Headers
+    $headers = ['Tên hoạt động', 'Thời gian', 'Địa điểm', 'Số lượng đăng ký', 'Trạng thái'];
+    $col = 'A';
+    foreach ($headers as $header) {
+        $sheet->setCellValue($col . $currentRow, $header);
+        $sheet->getStyle($col . $currentRow)->getFont()->setBold(true);
+        $sheet->getStyle($col . $currentRow)->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('E0E0E0');
+        $col++;
+    }
+    $currentRow++;
+
+    // Activity data
+    $activities = $conn->query("
         SELECT 
-            SUM(CASE WHEN LoaiGiaoDich = 1 THEN SoTien ELSE 0 END) as total_income,
-            SUM(CASE WHEN LoaiGiaoDich = 0 THEN SoTien ELSE 0 END) as total_expense
-        FROM taichinh
-        WHERE NgayGiaoDich BETWEEN '$startDate' AND '$endDate'
-    ")->fetch_assoc();
+            h.TenHoatDong,
+            h.NgayBatDau,
+            h.NgayKetThuc,
+            h.DiaDiem,
+            COUNT(DISTINCT dk.Id) as total_registrations,
+            CASE 
+                WHEN NOW() < h.NgayBatDau THEN 'Sắp diễn ra'
+                WHEN NOW() BETWEEN h.NgayBatDau AND h.NgayKetThuc THEN 'Đang diễn ra'
+                ELSE 'Đã kết thúc'
+            END as status
+        FROM hoatdong h
+        LEFT JOIN danhsachdangky dk ON h.Id = dk.HoatDongId AND dk.TrangThai = 1
+        WHERE h.NgayTao BETWEEN '$startDate' AND '$endDate'
+        GROUP BY h.Id
+        ORDER BY h.NgayBatDau DESC
+    ");
 
-    $data[] = ['THỐNG KÊ TÀI CHÍNH'];
-    $data[] = ['Tổng thu', format_money($financeStats['total_income'])];
-    $data[] = ['Tổng chi', format_money($financeStats['total_expense'])];
-    $data[] = ['Số dư', format_money($financeStats['total_income'] - $financeStats['total_expense'])];
-    $data[] = [''];
-
-    // 4. Document Statistics
-    $documentStats = $conn->query("
-        SELECT COUNT(*) as total_documents
-        FROM tailieu
-        WHERE NgayTao BETWEEN '$startDate' AND '$endDate'
-    ")->fetch_assoc();
-
-    $data[] = ['THỐNG KÊ TÀI LIỆU'];
-    $data[] = ['Tổng số tài liệu', number_format($documentStats['total_documents'])];
-    $data[] = [''];
-
-    // 5. News Statistics
-    $newsStats = $conn->query("
-        SELECT COUNT(*) as total_news
-        FROM tintuc
-        WHERE NgayTao BETWEEN '$startDate' AND '$endDate'
-    ")->fetch_assoc();
-
-    $data[] = ['THỐNG KÊ TIN TỨC'];
-    $data[] = ['Tổng số tin tức', number_format($newsStats['total_news'])];
-    $data[] = [''];
-
-    // 6. Detailed Financial Transactions
-    $data[] = ['CHI TIẾT GIAO DỊCH TÀI CHÍNH'];
-    $data[] = ['Ngày', 'Loại', 'Số tiền', 'Mô tả', 'Người tạo'];
-
-    $financeQuery = "
-        SELECT 
-            tc.NgayGiaoDich,
-            tc.LoaiGiaoDich,
-            tc.SoTien,
-            tc.MoTa,
-            nd.HoTen as NguoiTao
-        FROM taichinh tc
-        LEFT JOIN nguoidung nd ON tc.NguoiDungId = nd.Id
-        WHERE tc.NgayGiaoDich BETWEEN ? AND ?
-        ORDER BY tc.NgayGiaoDich DESC
-    ";
-    
-    $stmt = $conn->prepare($financeQuery);
-    $stmt->bind_param("ss", $startDate, $endDate);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    while ($row = $result->fetch_assoc()) {
-        $data[] = [
-            format_date($row['NgayGiaoDich']),
-            $row['LoaiGiaoDich'] == 1 ? 'Thu' : 'Chi',
-            format_money($row['SoTien']),
-            $row['MoTa'],
-            $row['NguoiTao']
-        ];
+    while ($activity = $activities->fetch_assoc()) {
+        $sheet->setCellValue('A' . $currentRow, $activity['TenHoatDong']);
+        $sheet->setCellValue('B' . $currentRow, date('d/m/Y H:i', strtotime($activity['NgayBatDau'])) . ' - ' . 
+                                               date('d/m/Y H:i', strtotime($activity['NgayKetThuc'])));
+        $sheet->setCellValue('C' . $currentRow, $activity['DiaDiem']);
+        $sheet->setCellValue('D' . $currentRow, $activity['total_registrations']);
+        $sheet->setCellValue('E' . $currentRow, $activity['status']);
+        $currentRow++;
     }
 
-    // Export to Excel
-    $filename = 'bao_cao_tong_hop_' . date('Y-m-d_H-i-s') . '.xlsx';
-    export_excel($data, $filename);
+    // Style the entire table
+    $tableRange = 'A' . ($currentRow - 1) . ':E' . ($currentRow - 1);
+    $sheet->getStyle($tableRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
-    // Log activity
-    log_activity(
-        $_SERVER['REMOTE_ADDR'],
-        $_SESSION['user_id'],
-        'Xuất báo cáo tổng hợp',
-        'Thành công',
-        "Đã xuất file Excel: $filename"
-    );
+    // Set the content type and headers for download
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="bao-cao-hoat-dong.xlsx"');
+    header('Cache-Control: max-age=0');
+
+    // Save the spreadsheet to PHP output
+    $writer = new Xlsx($spreadsheet);
+    $writer->save('php://output');
+    exit;
 
 } catch (Exception $e) {
     die('Error: ' . $e->getMessage());
 }
-?>
