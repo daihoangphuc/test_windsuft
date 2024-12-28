@@ -1,0 +1,230 @@
+1. TỔNG QUAN
+Mục tiêu:
+Xây dựng một hệ thống quản lý câu lạc bộ với đầy đủ chức năng từ quản lý thành viên, hoạt động, tài chính đến báo cáo, giúp tối ưu hóa quy trình và nâng cao trải nghiệm người dùng.
+Đảm bảo tính dễ sử dụng, bảo mật, và hiệu suất cao.
+DỰ ÁN CỦA TÔI CHỈ QUẢN LÝ CHO MỘT CLB
+2. YÊU CẦU HỆ THỐNG
+Ngôn ngữ và Công nghệ:
+Ngôn ngữ lập trình: PHP 7.4+ (không dùng framework)
+Cơ sở dữ liệu: MySQL
+Giao diện: HTML5, CSS3 (TailwindCSS - Flowbite)
+Thư viện hỗ trợ: jQuery, AJAX
+Server: XAMPP (Apache + MySQL)
+Cấu hình cơ sở dữ liệu:
+php
+Sao chép mã
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "hstv-management";
+$port = "3307";
+
+$conn = new mysqli($servername, $username, $password, $dbname, $port);
+if ($conn->connect_error) {
+    die("Kết nối MySQLi thất bại: " . $conn->connect_error);
+}
+3. YÊU CẦU CHỨC NĂNG
+- Cấu trúc dự án viết php thuần, không dùng framework với các module riêng biệt
+- Mô hình CSDL tôi cung cấp ở file csdl.sql
+- Có phần giao diện riêng cho người dùng và Admin tương ứng với các chức NĂNG
+- UI có responesive cho mobile và desktop
+- Giao diện phải có 2 layout chính là layout người dùng và layout admin; các trang sẽ hiển thị trong layout nào tương ứng với chức năng và quyền của user hiện tại
+- Các trang cần có chức năng đăng nhập và đăng xuất
+- Các trang cần có chức năng quên mật khẩu và khôi phục mật khẩu qua email
+- PHẢI CÓ THÊM SỬA XÓA, SEARCH, EXPort file excel đối với tất cả các bảng trong CSDL với quyền Admin 
+thêm sửa xóa cho thong báo và có  thong báo sẽ hiển thị lên giao diện trang web luôn như những tin tức vậy;
+3.1. Quản lý người dùng (NguoiDung):
+Đăng ký tài khoản (sinh viên).
+Đăng nhập/Đăng xuất.
+tích hợp đăng nhập với google, nếu chưa có tài khoản thì thêm vào bảng NguoiDung các thông tin như HoTen, Email trước các trường còn lại nhập sau trong trang cập nhật thông tin.
+
+Quản lý thông tin cá nhân.
+Đổi mật khẩu và khôi phục mật khẩu qua email.
+Phân quyền (Admin, Sinh viên).
+
+Validate dữ liệu đầu vào (email, mật khẩu...).
+3.2. Quản lý chức vụ (ChucVu):
+Thêm, sửa, xóa chức vụ.
+- Sẽ có cac chức vụ trong clb như sau: Chủ nhiệm, Phó chủ nhiệm, Ủy viên, Thành viên, Cố vấn, Phó cố vấn
+Hiển thị danh sách chức vụ.
+Quản lý vai trò liên quan đến chức vụ.
+3.3. Quản lý hoạt động (HoatDong):
+Thêm, sửa, xóa hoạt động.
+Hiển thị danh sách hoạt động. (Cho phép đăng ký và hủy đăng ký trước thời gian diễn ra hoạt động, sau thời gian
+ diễn ra hoạt động nếu người dùng có đăng ký mà không tham gia sẽ tự động bị điểm danh vắng với trạng thái ở bảng DanhSachThamGia là 0)
+(Danh sách đăng ký và tham gia hoạt động chỉ hiển thị của người dùng hiện tại; còn nếu là admin mới có thể xem toàn bộ người dùng)
+
+Quản lý đăng ký và điểm danh.
+Báo cáo và thống kê số lượng tham gia, đăng ký.
+3.4. Quản lý tài chính (TaiChinh):
+Thêm, sửa, xóa các khoản thu/chi.
+Thống kê và báo cáo tài chính theo thời gian.
+Giao diện biểu đồ thu/chi.
+3.5. Quản lý tài liệu:
+Upload, phân loại, và tải xuống tài liệu.
+Quản lý quyền truy cập tài liệu.
+3.6. Quản lý tin tức (TinTuc):
+Thêm, sửa, xóa tin tức.
+Hiển thị danh sách tin tức.
+3.7. Báo cáo & Thống kê:
+Biểu đồ trực quan: thành viên, sự kiện.
+Thống kê số lượng tham gia/đăng ký theo hoạt động.
+Xuất báo cáo ra file Excel.
+3.8. Quản lý nhiệm vụ (NhiemVu):
+Thêm, sửa, xóa nhiệm vụ.
+Hiển thị danh sách nhiệm vụ.
+Phân công nhiệm vụ cho thành viên.
+Quản lý trạng thái nhiệm vụ (đã hoàn thành, đang xử lý, chưa bắt đầu).
+Báo cáo và thống kê nhiệm vụ theo thời gian.
+4. YÊU CẦU GIAO DIỆN
+4.1. Giao diện người dùng:
+Trang chính:
+Banner, menu chính.
+Hiển thị CLB nổi bật, sự kiện mới.
+Thống kê tổng quan.
+Danh sách ban chủ nhiệm (Có các chức vụ != Thành viên)
+Trang thông tin cá nhân:
+Quản lý thông tin và đổi mật khẩu.
+Xem lịch sử tham gia sự kiện.
+4.2. Giao diện quản trị (Admin):
+Dashboard:
+Tổng quan về tài chính, thành viên, hoạt động.
+Menu quản trị:
+Liệt kê các chức năng quản lý.
+Báo cáo trực quan:
+Biểu đồ và báo cáo định kỳ.
+4.3. Yêu cầu khác:
+Responsive: Giao diện thân thiện trên mọi thiết bị.
+Flowbite Components: Sử dụng các thành phần như modal, alert, table để tối ưu giao diện.
+Với CDN: <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js">;
+</script>; <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+- Hãy đảm bảo có phần giao diện riêng  cho người dùng và Admin tương ứng với các chức năng
+- Hãy tận dụng tôi đa các component có sẵn của Flowbit như: Components
+Accordion
+Alerts
+Avatar
+Badge
+Banner
+Bottom Navigation
+Breadcrumb
+Buttons
+Button Group
+Card
+Carousel
+Chat Bubble
+Clipboard
+Datepicker
+Device Mockups
+Drawer
+Dropdowns
+Footer
+Forms
+Gallery
+Indicators
+Jumbotron
+KBD
+List Group
+Mega Menu
+Modal
+Navbar
+Pagination
+Popover
+Progress
+Rating
+Sidebar
+Skeleton
+Speed Dial
+Spinner
+Stepper
+Tables
+Tabs
+Timeline
+Toast
+Tooltips
+Typography
+Video
+Forms
+Input Field
+File Input
+Search Input
+Number Input
+Phone Input
+Select
+Textarea
+Timepicker
+Checkbox
+Radio
+Toggle
+Range
+Floating Label
+Typography
+Headings
+Paragraphs
+Blockquote
+Images
+Lists
+Links
+Text
+HR
+Plugins
+Charts
+Datatables
+NEW
+WYSIWYG
+NEW
+4.4. Giao diện nhiệm vụ:
+Trang quản lý nhiệm vụ:
+Hiển thị danh sách nhiệm vụ.
+Chức năng thêm, sửa, xóa nhiệm vụ.
+Phân công nhiệm vụ cho thành viên.
+Quản lý trạng thái nhiệm vụ.
+5. YÊU CẦU BẢO MẬT
+Mã hóa mật khẩu bằng password_hash.
+Kiểm tra dữ liệu đầu vào với filter_var và htmlspecialchars.
+Chống tấn công SQL Injection (Prepared Statements).
+Hạn chế số lần đăng nhập sai.
+Log hoạt động người dùng.
+Backup dữ liệu định kỳ.
+6. YÊU CẦU TỐI ƯU
+Sử dụng LIMIT và OFFSET trong truy vấn.
+Tối ưu hóa query và indexes.
+Sử dụng AJAX để tải dữ liệu động (giảm tải trang).
+Cache dữ liệu thường xuyên truy cập.
+7. TÍNH NĂNG TÌM KIẾM & LỌC
+Tìm kiếm nâng cao (theo tên, ngày tháng, trạng thái...).
+Lọc theo tiêu chí: Vai trò, trạng thái.
+Phân trang danh sách.
+
+
+
+
+CHỨC NĂNG BỔ SUNG:
+1. Thống kê thành viên
+Tổng số thành viên (NguoiDung).
+Số lượng thành viên theo lớp (LopHoc).
+Số lượng thành viên theo chức vụ (ChucVu).
+Phân loại giới tính thành viên (GioiTinh).
+Số lượng thành viên mới đăng ký theo thời gian (NgayTao).
+2. Thống kê hoạt động
+Tổng số hoạt động (HoatDong).
+Số lượng hoạt động đang diễn ra, đã hoàn thành, hoặc bị hủy (TrangThai).
+Tổng số người tham gia theo từng hoạt động (DanhSachThamGia).
+Tỷ lệ tham gia hoạt động (đăng ký so với tham gia thực tế).
+Số lượng hoạt động theo thời gian (tháng, quý, năm).
+3. Thống kê nhiệm vụ
+Tổng số nhiệm vụ (NhiemVu).
+Phân loại nhiệm vụ theo trạng thái: đã hoàn thành, đang xử lý, hoặc chưa bắt đầu (TrangThai).
+Số lượng nhiệm vụ được giao cho từng thành viên (PhanCongNhiemVu).
+Số nhiệm vụ được phân công trong từng khoảng thời gian.
+4. Thống kê chi tiết đăng ký và tham gia
+Tổng số lượt đăng ký tham gia hoạt động (DanhSachDangKy).
+Số lượng đăng ký nhưng không tham gia (DanhSachDangKy với TrangThai = false và không có trong DanhSachThamGia).
+Thời gian điểm danh muộn trung bình của các thành viên (DiemDanhLuc so với HoatDong.NgayBatDau).
+5. Thống kê lịch sử hoạt động hệ thống
+Số lượng hoạt động hệ thống (LogHoatDong).
+Phân loại hành động (đăng nhập, thêm, xóa, cập nhật) (HanhDong).
+Số lỗi xảy ra trong hệ thống (TrangThai = "Lỗi").
+6. Thống kê khóa và lớp học
+Tổng số khoa trường (KhoaTruong).
+Tổng số lớp học trong mỗi khoa trường (LopHoc với KhoaTruongId).
+Số lượng thành viên trong từng lớp học.
