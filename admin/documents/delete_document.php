@@ -34,6 +34,12 @@ try {
         throw new Exception('Document not found');
     }
 
+    // Delete document permissions
+    $deletePermissionsQuery = "DELETE FROM phanquyentailieu WHERE TaiLieuId = ?";
+    $stmt = $conn->prepare($deletePermissionsQuery);
+    $stmt->bind_param("i", $documentId);
+    $stmt->execute();
+
     // Delete the document
     $deleteQuery = "DELETE FROM tailieu WHERE Id = ?";
     $stmt = $conn->prepare($deleteQuery);

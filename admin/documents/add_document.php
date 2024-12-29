@@ -1,8 +1,25 @@
 <?php
+session_start();
 require_once '../../config/database.php';
+require_once '../../config/auth.php';
 require_once '../../utils/functions.php';
 
 header('Content-Type: application/json');
+
+// Kiểm tra quyền admin
+$auth = new Auth();
+try {
+    $auth->requireAdmin();
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    exit;
+}
+
+// Kiểm tra đăng nhập
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập']);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
@@ -16,9 +33,16 @@ try {
     // Get and sanitize input
     $title = sanitize_input($_POST['title']);
     $description = sanitize_input($_POST['description']);
+    $documentType = sanitize_input($_POST['documentType']);
     
+    // Debug
+    error_log("Title: " . $title);
+    error_log("Description: " . $description);
+    error_log("Document Type: " . $documentType);
+    error_log("Files: " . print_r($_FILES, true));
+
     // Validate input
-    if (empty($title) || empty($description)) {
+    if (empty($title) || empty($description) || empty($documentType)) {
         throw new Exception('Vui lòng điền đầy đủ thông tin bắt buộc');
     }
 
@@ -41,16 +65,46 @@ try {
     }
 
     // Upload file
-    $file = upload_file($_FILES['file'], '../../uploads/documents/');
+    $uploadDir = '../../uploads/documents/';
+    if (!file_exists($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+    
+    $fileName = uniqid() . '_' . basename($_FILES['file']['name']);
+    $filePath = $uploadDir . $fileName;
+    
+    if (!move_uploaded_file($_FILES['file']['tmp_name'], $filePath)) {
+        throw new Exception('Không thể tải file lên');
+    }
 
     // Start transaction
     $conn->begin_transaction();
 
     // Insert document
-    $query = "INSERT INTO tailieu (TenTaiLieu, MoTa, FileDinhKem, NguoiTaoId) VALUES (?, ?, ?, ?)";
+    $query = "INSERT INTO tailieu (TenTaiLieu, MoTa, DuongDan, LoaiTaiLieu, NguoiTaoId) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
     $nguoiTaoId = $_SESSION['user_id'];
-    $stmt->bind_param("sssi", $title, $description, $file, $nguoiTaoId);
+    $fileUrl = '/test_windsuft/uploads/documents/' . $fileName;
+    $stmt->bind_param("ssssi", $title, $description, $fileUrl, $documentType, $nguoiTaoId);
+    $stmt->execute();
+    
+    // Get the ID of the newly inserted document
+    $documentId = $conn->insert_id;
+    
+    // Insert document permissions for both admin and member roles
+    $permissionQuery = "INSERT INTO phanquyentailieu (TaiLieuId, VaiTroId, Quyen) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($permissionQuery);
+    
+    // Admin role (VaiTroId = 1) gets full access (Quyen = 1)
+    $vaiTroAdmin = 1;
+    $quyenAdmin = 1;
+    $stmt->bind_param("iii", $documentId, $vaiTroAdmin, $quyenAdmin);
+    $stmt->execute();
+    
+    // Member role (VaiTroId = 2) gets read access (Quyen = 1)
+    $vaiTroMember = 2;
+    $quyenMember = 1;
+    $stmt->bind_param("iii", $documentId, $vaiTroMember, $quyenMember);
     $stmt->execute();
 
     // Log activity

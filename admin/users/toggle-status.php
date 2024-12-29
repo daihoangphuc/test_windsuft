@@ -34,7 +34,7 @@ try {
     $result = "Thành công";
     $details = "$action cho người dùng ID: $user_id";
     
-    $stmt = $db->prepare("INSERT INTO nhatkyhoatdong (IP, NguoiDung, HanhDong, KetQua, ChiTiet) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $db->prepare("INSERT INTO log (IP, NguoiDung, HanhDong, KetQua, ChiTiet) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("sssss", $ip, $admin_username, $action, $result, $details);
     $stmt->execute();
     

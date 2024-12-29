@@ -16,7 +16,7 @@ $news = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt = $db->prepare("SELECT n.*, c.TenChucVu 
                       FROM nguoidung n 
                       JOIN chucvu c ON n.ChucVuId = c.Id 
-                      WHERE c.TenChucVu IN ('Chủ nhiệm', 'Phó chủ nhiệm', 'Thư ký')
+                      WHERE c.Id IN (1, 2, 3, 11, 12)
                       ORDER BY c.Id ASC");
 $stmt->execute();
 $leaders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -24,11 +24,12 @@ $leaders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $pageTitle = 'Trang chủ';
 require_once __DIR__ . '/layouts/header.php';
 ?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
 
 <div class="bg-white py-24 sm:py-32">
   <div class="mx-auto max-w-7xl px-6 lg:px-8">
     <div class="mx-auto max-w-2xl text-center">
-      <h2 class="text-3xl font-bold tracking-tight text-[#4a90e2] sm:text-4xl">Câu lạc bộ Học sinh - Sinh viên</h2>
+      <h2 class="text-3xl font-bold tracking-tight text-[#4a90e2] sm:text-4xl">Câu lạc bộ Hành trình sinh viên</h2>
       <p class="mt-2 text-lg leading-8 text-gray-600">Nơi kết nối và phát triển tài năng</p>
     </div>
 
@@ -98,24 +99,60 @@ require_once __DIR__ . '/layouts/header.php';
 
 
     <?php if (!empty($leaders)): ?>
-    <div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-      <h3 class="text-2xl font-bold mb-6 text-[#4a90e2]">Ban chủ nhiệm</h3>
-      <ul role="list" class="grid gap-x-8 gap-y-12 sm:grid-cols-2 sm:gap-y-16 xl:col-span-2">
+<div class="mx-auto mt-16 max-w-5xl">
+  <h3 class="text-2xl font-bold mb-6 text-[#4a90e2]">Ban chủ nhiệm</h3>
+  <!-- Wrapper to prevent overflow -->
+  <div class="overflow-hidden">
+    <div class="swiper-container">
+      <div class="swiper-wrapper">
         <?php foreach ($leaders as $leader): ?>
-        <li>
-          <div class="flex items-center gap-x-6">
-            <div>
-              <h3 class="text-base font-semibold leading-7 tracking-tight text-gray-900"><?php echo htmlspecialchars($leader['HoTen']); ?></h3>
-              <p class="text-sm font-semibold leading-6 text-indigo-600"><?php echo htmlspecialchars($leader['TenChucVu']); ?></p>
+        <div class="swiper-slide">
+          <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="flex justify-center mt-4">
+              <div class="w-48 h-48 rounded-full border-4 border-blue-200 overflow-hidden">
+                <img src="<?php echo str_replace('../', BASE_URL . '/', $leader['anhdaidien']); ?>" 
+                     alt="<?php echo htmlspecialchars($leader['HoTen']); ?>" 
+                     class="w-full h-full object-cover">
+              </div>
+            </div>
+            <div class="p-4 text-center">
+              <h3 class="text-lg font-semibold text-gray-900"><?php echo htmlspecialchars($leader['HoTen']); ?></h3>
+              <p class="text-sm text-indigo-600"><?php echo htmlspecialchars($leader['TenChucVu']); ?></p>
             </div>
           </div>
-        </li>
+        </div>
         <?php endforeach; ?>
-      </ul>
+      </div>
+      <!-- Add navigation -->
+      <div class="swiper-button-next"></div>
+      <div class="swiper-button-prev"></div>
     </div>
-    <?php endif; ?>
+  </div>
+</div>
+<?php endif; ?>
+
+
+
     
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    new Swiper('.swiper-container', {
+      slidesPerView: 1,
+      spaceBetween: 20,
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+      breakpoints: {
+        640: { slidesPerView: 1, spaceBetween: 20 },
+        768: { slidesPerView: 2, spaceBetween: 30 },
+        1024: { slidesPerView: 3, spaceBetween: 40 },
+      },
+    });
+  });
+</script>
 
 <?php require_once __DIR__ . '/layouts/footer.php'; ?>

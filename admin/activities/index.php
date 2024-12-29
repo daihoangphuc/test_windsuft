@@ -109,10 +109,20 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                     <td class="px-6 py-4"><?php echo $activity['SoLuong']; ?></td>
                     <td class="px-6 py-4"><?php echo htmlspecialchars($activity['NguoiTao']); ?></td>
                     <td class="px-6 py-4">
-                        <span class="px-2 py-1 text-xs font-semibold rounded <?php echo $activity['TrangThai'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                            <?php echo $activity['TrangThai'] ? 'Hoạt động' : 'Không hoạt động'; ?>
-                        </span>
-                    </td>
+                    <span class="px-2 py-1 text-xs font-semibold rounded 
+                        <?php 
+                            echo $activity['TrangThai'] === 0 ? 'bg-blue-100 text-blue-800' : 
+                                ($activity['TrangThai'] === 1 ? 'bg-green-100 text-green-800' : 
+                                'bg-gray-100 text-gray-800'); 
+                        ?>">
+                        <?php 
+                            echo $activity['TrangThai'] === 0 ? 'Sắp diễn ra' : 
+                                ($activity['TrangThai'] === 1 ? 'Đang diễn ra' : 
+                                'Đã kết thúc'); 
+                        ?>
+                    </span>
+                </td>
+
                     <td class="px-6 py-4">
                         <?php if (!empty($activity['DuongDanMinhChung'])): ?>
                             <a href="<?php echo '../../' . $activity['DuongDanMinhChung']; ?>" target="_blank" 

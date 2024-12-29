@@ -142,7 +142,7 @@ function export_excel($data, $filename) {
 
 function log_activity($ip, $user, $action, $result, $details = '') {
     $db = Database::getInstance()->getConnection();
-    $stmt = $db->prepare("INSERT INTO log (IP, NguoiDung, HanhDong, KetQua, ChiTiet, ThoiGian) VALUES (?, ?, ?, ?, ?, NOW())");
+    $stmt = $db->prepare("INSERT INTO log (IP, NguoiDung, HanhDong, KetQua, ChiTiet, NgayTao) VALUES (?, ?, ?, ?, ?, NOW())");
     $stmt->bind_param("sssss", $ip, $user, $action, $result, $details);
     $stmt->execute();
 }

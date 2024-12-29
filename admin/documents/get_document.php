@@ -10,13 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    if (!isset($_GET['documentId'])) {
+    if (!isset($_GET['id'])) {
         throw new Exception('Document ID is required');
     }
 
     $db = Database::getInstance();
     $conn = $db->getConnection();
-    $documentId = (int)$_GET['documentId'];
+    $documentId = (int)$_GET['id'];
 
     // Get document details
     $query = "SELECT * FROM tailieu WHERE Id = ?";
@@ -30,7 +30,7 @@ try {
         throw new Exception('Document not found');
     }
 
-    echo json_encode(['success' => true, 'data' => $document]);
+    echo json_encode(['success' => true, 'document' => $document]);
 
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);

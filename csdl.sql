@@ -86,7 +86,7 @@ CREATE TABLE `hoatdong` (
   `DiaDiem` varchar(255) DEFAULT NULL,
   `ToaDo` varchar(50) DEFAULT NULL,
   `SoLuong` int(11) DEFAULT 0,
-  `TrangThai` tinyint(4) DEFAULT 1,
+  `TrangThai` tinyint(4) DEFAULT 0, 	0: Sắp diễn ra, 1 Đang diễn ra; 2: Đã kết thúc
   `NguoiTaoId` int(11) DEFAULT NULL,
   `NgayTao` datetime DEFAULT current_timestamp(),
   `DuongDanMinhChung` text DEFAULT NULL,

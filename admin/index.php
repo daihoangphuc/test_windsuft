@@ -225,13 +225,23 @@ require_once __DIR__ . '/../layouts/admin_header.php';
                                 </td>
                                 <td class="px-4 py-3 text-xs">
                                     <?php
-                                    $statusClass = match($task['TrangThai']) {
-                                        0 => 'text-gray-700 bg-gray-100',    // Chưa bắt đầu
-                                        1 => 'text-yellow-700 bg-yellow-100', // Đang thực hiện
-                                        2 => 'text-green-700 bg-green-100',  // Hoàn thành
-                                        3 => 'text-red-700 bg-red-100',      // Quá hạn
-                                        default => 'text-gray-700 bg-gray-100'
-                                    };
+                                    $statusClass = '';
+                                    switch ($task['TrangThai']) {
+                                        case 0:
+                                            $statusClass = 'text-gray-700 bg-gray-100';
+                                            break;
+                                        case 1:
+                                            $statusClass = 'text-yellow-700 bg-yellow-100';
+                                            break;
+                                        case 2:
+                                            $statusClass = 'text-green-700 bg-green-100';
+                                            break;
+                                        case 3:
+                                            $statusClass = 'text-red-700 bg-red-100';
+                                            break;
+                                        default:
+                                            $statusClass = 'text-gray-700 bg-gray-100';
+                                    }
                                     ?>
                                     <span class="px-2 py-1 font-semibold leading-tight rounded-full <?php echo $statusClass; ?>">
                                         <?php echo $task['TrangThaiText']; ?>

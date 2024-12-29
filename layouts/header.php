@@ -71,7 +71,7 @@ $auth = new Auth();
                         <a href="<?php echo base_url('/logout.php'); ?>" 
                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             Đăng xuất
-                        </a>
+                        </a>+++
                     </div>
                 </div>
             <?php else: ?>

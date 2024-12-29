@@ -9,6 +9,19 @@ class Activity {
     }
 
     public function add($data) {
+        // Tự động xác định trạng thái dựa trên ngày
+        $now = new DateTime();
+        $start = new DateTime($data['NgayBatDau']);
+        $end = new DateTime($data['NgayKetThuc']);
+        
+        if ($now < $start) {
+            $data['TrangThai'] = 0; // Sắp diễn ra
+        } elseif ($now >= $start && $now <= $end) {
+            $data['TrangThai'] = 1; // Đang diễn ra
+        } else {
+            $data['TrangThai'] = 2; // Đã kết thúc
+        }
+
         $query = "INSERT INTO hoatdong (TenHoatDong, MoTa, NgayBatDau, NgayKetThuc, DiaDiem, ToaDo, SoLuong, TrangThai, NguoiTaoId) 
                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
@@ -29,6 +42,21 @@ class Activity {
     }
 
     public function update($id, $data) {
+        // Tự động xác định trạng thái dựa trên ngày nếu không có override
+        if (!isset($data['TrangThai'])) {
+            $now = new DateTime();
+            $start = new DateTime($data['NgayBatDau']);
+            $end = new DateTime($data['NgayKetThuc']);
+            
+            if ($now < $start) {
+                $data['TrangThai'] = 0; // Sắp diễn ra
+            } elseif ($now >= $start && $now <= $end) {
+                $data['TrangThai'] = 1; // Đang diễn ra
+            } else {
+                $data['TrangThai'] = 2; // Đã kết thúc
+            }
+        }
+
         $query = "UPDATE hoatdong 
                  SET TenHoatDong = ?, MoTa = ?, NgayBatDau = ?, NgayKetThuc = ?, 
                      DiaDiem = ?, ToaDo = ?, SoLuong = ?, TrangThai = ? 
@@ -69,6 +97,9 @@ class Activity {
     }
 
     public function getAll($search = '', $limit = 10, $offset = 0) {
+        // Tự động cập nhật trạng thái của tất cả hoạt động
+        $this->updateAllStatus();
+
         $query = "SELECT h.*, n.HoTen as NguoiTao,
                   COUNT(DISTINCT dk.Id) as SoLuongDangKy,
                   COUNT(DISTINCT dt.Id) as SoLuongThamGia
@@ -106,5 +137,15 @@ class Activity {
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
         return $result['total'];
+    }
+
+    private function updateAllStatus() {
+        $query = "UPDATE hoatdong 
+                 SET TrangThai = CASE 
+                     WHEN NOW() < NgayBatDau THEN 0
+                     WHEN NOW() >= NgayBatDau AND NOW() <= NgayKetThuc THEN 1
+                     ELSE 2
+                 END";
+        $this->db->query($query);
     }
 }

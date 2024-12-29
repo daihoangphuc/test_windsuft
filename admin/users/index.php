@@ -4,6 +4,14 @@ require_once __DIR__ . '/../../includes/classes/User.php';
 
 $db = Database::getInstance()->getConnection();
 $user = new User();
+
+// Lấy danh sách lớp học
+$stmt = $db->query("SELECT l.*, k.TenKhoaTruong 
+                    FROM lophoc l 
+                    JOIN khoatruong k ON l.KhoaTruongId = k.Id 
+                    ORDER BY k.TenKhoaTruong, l.TenLop");
+$classes = $stmt->fetch_all(MYSQLI_ASSOC);
+
 $search = $_GET['search'] ?? '';
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 10;
@@ -62,6 +70,17 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                                 <option value="1">Admin</option>
                             </select>
                         </div>
+                        <div>
+                            <label for="class_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Lớp</label>
+                            <select name="class_id" id="class_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option value="">Chọn lớp</option>
+                                <?php foreach ($classes as $class): ?>
+                                    <option value="<?php echo $class['Id']; ?>">
+                                        <?php echo htmlspecialchars($class['TenLop'] . ' - ' . $class['TenKhoaTruong']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
@@ -104,52 +123,93 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
 
     <!-- Bảng danh sách người dùng -->
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <table class="w-full text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
-                    <th scope="col" class="px-6 py-3">Họ tên</th>
-                    <th scope="col" class="px-6 py-3">Email</th>
-                    <th scope="col" class="px-6 py-3">Mã SV</th>
+                    <th scope="col" class="px-6 py-3">Ảnh</th>
+                    <th scope="col" class="px-6 py-3">Thông tin</th>
                     <th scope="col" class="px-6 py-3">Chức vụ</th>
-                    <th scope="col" class="px-6 py-3">Lớp</th>
-                    <th scope="col" class="px-6 py-3">Khoa</th>
+                    <th scope="col" class="px-6 py-3">Lớp/Khoa</th>
                     <th scope="col" class="px-6 py-3">Trạng thái</th>
-                    <th scope="col" class="px-6 py-3">
-                        <span class="sr-only">Thao tác</span>
-                    </th>
+                    <th scope="col" class="px-6 py-3">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($users as $user): ?>
-                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        <?php echo htmlspecialchars($user['HoTen']); ?>
-                    </th>
-                    <td class="px-6 py-4"><?php echo htmlspecialchars($user['Email']); ?></td>
-                    <td class="px-6 py-4"><?php echo htmlspecialchars($user['MaSinhVien']); ?></td>
-                    <td class="px-6 py-4"><?php echo htmlspecialchars($user['TenChucVu'] ?? 'Chưa có'); ?></td>
-                    <td class="px-6 py-4"><?php echo htmlspecialchars($user['TenLop'] ?? 'Chưa có'); ?></td>
-                    <td class="px-6 py-4"><?php echo htmlspecialchars($user['TenKhoaTruong'] ?? 'Chưa có'); ?></td>
-                    <td class="px-6 py-4">
-                        <?php if ($user['TrangThai'] == 1): ?>
-                            <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                                Hoạt động
-                            </span>
-                        <?php else: ?>
-                            <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:bg-red-700 dark:text-red-100">
-                                Khóa
-                            </span>
-                        <?php endif; ?>
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <a href="edit.php?id=<?php echo $user['Id']; ?>" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Sửa</a>
-                        <?php if ($user['TrangThai'] == 1): ?>
-                            <a href="toggle-status.php?id=<?php echo $user['Id']; ?>&status=0" class="font-medium text-red-600 dark:text-red-500 hover:underline ml-3">Khóa</a>
-                        <?php else: ?>
-                            <a href="toggle-status.php?id=<?php echo $user['Id']; ?>&status=1" class="font-medium text-green-600 dark:text-green-500 hover:underline ml-3">Mở khóa</a>
-                        <?php endif; ?>
-                    </td>
-                </tr>
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <img class="w-10 h-10 rounded-full" 
+                                 src="<?php echo !empty($user['anhdaidien']) ? "../" . $user['anhdaidien'] : DEFAULT_AVATAR; ?>" 
+                                 alt="<?php echo htmlspecialchars($user['HoTen']); ?>">
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-base font-semibold">
+                                <?php echo htmlspecialchars($user['HoTen']); ?>
+                            </div>
+                            <div class="font-normal text-gray-500">
+                                <?php echo htmlspecialchars($user['Email']); ?>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                <?php if ($user['MaSinhVien']): ?>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                        <?php echo htmlspecialchars($user['MaSinhVien']); ?>
+                                    </span>
+                                <?php endif; ?>
+                                <?php
+                                $gioiTinhText = match ($user['GioiTinh']) {
+                                    1 => '<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Nam</span>',
+                                    0 => '<span class="bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded">Nữ</span>',
+                                    default => '<span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Khác</span>',
+                                };
+                                echo $gioiTinhText;
+                                ?>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium">
+                                <?php echo htmlspecialchars($user['TenChucVu'] ?? 'Chưa có'); ?>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                <?php
+                                $vaiTroText = match ($user['VaiTroId']) {
+                                    1 => '<span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Admin</span>',
+                                    2 => '<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Thành viên</span>',
+                                    default => '<span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Khác</span>',
+                                };
+                                echo $vaiTroText;
+                                ?>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <?php if ($user['TenLop']): ?>
+                                <div class="font-medium">
+                                    <?php echo htmlspecialchars($user['TenLop']); ?>
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    <?php echo htmlspecialchars($user['TenKhoaTruong'] ?? ''); ?>
+                                </div>
+                            <?php else: ?>
+                                <span class="text-gray-500">Chưa có lớp</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="h-2.5 w-2.5 rounded-full <?php echo $user['TrangThai'] ? 'bg-green-500' : 'bg-red-500'; ?> mr-2"></div>
+                                <button onclick="toggleUserStatus(<?php echo $user['Id']; ?>)" 
+                                        class="toggle-status font-medium <?php echo $user['TrangThai'] ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'; ?>">
+                                    <?php echo $user['TrangThai'] ? 'Vô hiệu hóa' : 'Kích hoạt'; ?>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex space-x-2">
+                                <a href="edit.php?id=<?php echo $user['Id']; ?>" 
+                                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                    Sửa
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
@@ -213,3 +273,107 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
 </div>
 
 <?php require_once __DIR__ . '/../../layouts/admin_footer.php'; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Khởi tạo modal
+    const modal = new Modal(document.getElementById('addUserModal'));
+    
+    // Xử lý nút đóng modal
+    const closeButtons = document.querySelectorAll('[data-modal-hide="addUserModal"]');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            modal.hide();
+        });
+    });
+    
+    // Xử lý nút mở modal
+    const openButton = document.querySelector('[data-modal-target="addUserModal"]');
+    openButton.addEventListener('click', () => {
+        modal.show();
+    });
+    
+    // Xử lý submit form
+    const form = document.getElementById('addUserForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Kiểm tra validation
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        // Gửi form bằng AJAX
+        fetch('add.php', {
+            method: 'POST',
+            body: new FormData(form)
+        })
+        .then(response => response.text())
+        .then(data => {
+            try {
+                // Thử parse JSON response
+                const jsonData = JSON.parse(data);
+                if (jsonData.success) {
+                    alert('Thêm người dùng thành công!');
+                    window.location.reload();
+                } else {
+                    alert(jsonData.message || 'Có lỗi xảy ra khi thêm người dùng');
+                }
+            } catch (e) {
+                // Nếu response không phải JSON, reload trang để hiển thị kết quả
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi thêm người dùng');
+        });
+    });
+});
+
+function toggleUserStatus(userId) {
+    if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái người dùng này?')) {
+        return;
+    }
+
+    fetch('toggle_status.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'user_id=' + userId
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Cập nhật UI
+            const button = document.querySelector(`button[onclick="toggleUserStatus(${userId})"]`);
+            const statusDot = button.previousElementSibling;
+            
+            if (data.new_status === 1) {
+                button.textContent = 'Vô hiệu hóa';
+                button.classList.remove('text-green-600', 'hover:text-green-900');
+                button.classList.add('text-red-600', 'hover:text-red-900');
+                statusDot.classList.remove('bg-red-500');
+                statusDot.classList.add('bg-green-500');
+            } else {
+                button.textContent = 'Kích hoạt';
+                button.classList.remove('text-red-600', 'hover:text-red-900');
+                button.classList.add('text-green-600', 'hover:text-green-900');
+                statusDot.classList.remove('bg-green-500');
+                statusDot.classList.add('bg-red-500');
+            }
+            
+            // Hiển thị thông báo
+            alert('Cập nhật trạng thái thành công!');
+        } else {
+            alert('Có lỗi xảy ra: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi cập nhật trạng thái');
+    });
+}
+</script>

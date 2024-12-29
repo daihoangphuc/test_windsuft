@@ -112,10 +112,10 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
             </div>
             <div>
                 <label for="status" class="block mb-2 text-sm font-medium text-gray-900">Trạng thái</label>
-                <select name="status" id="status" required
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                    <option value="1" <?php echo $activity_data['TrangThai'] == 1 ? 'selected' : ''; ?>>Hoạt động</option>
-                    <option value="0" <?php echo $activity_data['TrangThai'] == 0 ? 'selected' : ''; ?>>Đã hủy</option>
+                <select name="status" id="status" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option value="0" <?php echo $activity_data['TrangThai'] == 0 ? 'selected' : ''; ?>>Sắp diễn ra</option>
+                    <option value="1" <?php echo $activity_data['TrangThai'] == 1 ? 'selected' : ''; ?>>Đang diễn ra</option>
+                    <option value="2" <?php echo $activity_data['TrangThai'] == 2 ? 'selected' : ''; ?>>Đã kết thúc</option>
                 </select>
             </div>
         </div>

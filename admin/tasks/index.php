@@ -148,13 +148,23 @@ $users = $users_result->fetch_all(MYSQLI_ASSOC);
                         <td class="px-6 py-4"><?php echo date('d/m/Y H:i', strtotime($task['NgayKetThuc'])); ?></td>
                         <td class="px-6 py-4">
                             <?php
-                            $status_class = match($task['TrangThai']) {
-                                0 => 'text-gray-700 bg-gray-100',    // Chưa bắt đầu
-                                1 => 'text-yellow-700 bg-yellow-100', // Đang thực hiện
-                                2 => 'text-green-700 bg-green-100',  // Hoàn thành
-                                3 => 'text-red-700 bg-red-100',      // Quá hạn
-                                default => 'text-gray-700 bg-gray-100'
-                            };
+                            $status_class = '';
+                            switch ($task['TrangThai']) {
+                                case 0:
+                                    $status_class = 'text-gray-700 bg-gray-100';
+                                    break;
+                                case 1:
+                                    $status_class = 'text-yellow-700 bg-yellow-100';
+                                    break;
+                                case 2:
+                                    $status_class = 'text-green-700 bg-green-100';
+                                    break;
+                                case 3:
+                                    $status_class = 'text-red-700 bg-red-100';
+                                    break;
+                                default:
+                                    $status_class = 'text-gray-700 bg-gray-100';
+                            }
                             ?>
                             <span class="px-2 py-1 font-semibold leading-tight rounded-full <?php echo $status_class; ?>">
                                 <?php echo $task['TrangThaiText']; ?>

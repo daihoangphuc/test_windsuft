@@ -14,10 +14,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $student_id = filter_input(INPUT_POST, 'student_id', FILTER_SANITIZE_STRING);
     $password = $_POST['password'] ?? '';
     $role = filter_input(INPUT_POST, 'role', FILTER_VALIDATE_INT);
+    $class_id = filter_input(INPUT_POST, 'class_id', FILTER_VALIDATE_INT);
+    $default_avatar = '../uploads/users/tvupng.png';
+    
+    // Chuẩn bị response
+    header('Content-Type: application/json');
+    $response = ['success' => false, 'message' => ''];
     
     try {
         $db->begin_transaction();
         
+        // Validate required fields
+        if (empty($username) || empty($password) || empty($email) || empty($fullname)) {
+            throw new Exception("Vui lòng điền đầy đủ thông tin bắt buộc!");
+        }
+
+        // Validate password strength
+        if (strlen($password) < 8) {
+            throw new Exception("Mật khẩu phải có ít nhất 8 ký tự!");
+        }
+
+        // Validate email format
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("Email không hợp lệ!");
+        }
+
         // Kiểm tra username đã tồn tại
         $stmt = $db->prepare("SELECT Id FROM nguoidung WHERE TenDangNhap = ?");
         $stmt->bind_param("s", $username);
@@ -34,24 +55,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Email đã được sử dụng!");
         }
         
+        // Kiểm tra mã sinh viên đã tồn tại
+        if (!empty($student_id)) {
+            $stmt = $db->prepare("SELECT Id FROM nguoidung WHERE MaSinhVien = ?");
+            $stmt->bind_param("s", $student_id);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows > 0) {
+                throw new Exception("Mã sinh viên đã tồn tại!");
+            }
+        }
+
         // Thêm người dùng mới
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $db->prepare("INSERT INTO nguoidung (TenDangNhap, MatKhauHash, HoTen, Email, MaSinhVien) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $username, $password_hash, $fullname, $email, $student_id);
+        $stmt = $db->prepare("INSERT INTO nguoidung (TenDangNhap, MatKhauHash, HoTen, Email, MaSinhVien, VaiTroId, LopHocId, anhdaidien, TrangThai) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)");
+        $stmt->bind_param("ssssssis", $username, $password_hash, $fullname, $email, $student_id, $role, $class_id, $default_avatar);
         
         if (!$stmt->execute()) {
             throw new Exception("Không thể thêm người dùng!");
         }
         
         $user_id = $db->insert_id;
-        
-        // Gán vai trò cho người dùng
-        $stmt = $db->prepare("INSERT INTO vaitronguoidung (NguoiDungId, VaiTroId) VALUES (?, ?)");
-        $stmt->bind_param("ii", $user_id, $role);
-        
-        if (!$stmt->execute()) {
-            throw new Exception("Không thể gán vai trò cho người dùng!");
-        }
         
         // Log hoạt động
         $ip = $_SERVER['REMOTE_ADDR'];
@@ -60,22 +83,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = "Thành công";
         $details = "Thêm người dùng: $username";
         
-        $stmt = $db->prepare("INSERT INTO nhatkyhoatdong (IP, NguoiDung, HanhDong, KetQua, ChiTiet) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $db->prepare("INSERT INTO log (IP, NguoiDung, HanhDong, KetQua, ChiTiet) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("sssss", $ip, $admin_username, $action, $result, $details);
         $stmt->execute();
         
         $db->commit();
-        $_SESSION['flash_message'] = "Thêm người dùng thành công!";
-        header('Location: index.php');
-        exit();
+        $response['success'] = true;
+        $response['message'] = "Thêm người dùng thành công!";
         
     } catch (Exception $e) {
         $db->rollback();
-        $_SESSION['flash_error'] = $e->getMessage();
-        header('Location: index.php');
-        exit();
+        $response['message'] = $e->getMessage();
     }
+    
+    echo json_encode($response);
+    exit();
 }
 
+// Nếu không phải POST request, chuyển hướng về trang index
 header('Location: index.php');
 exit();
