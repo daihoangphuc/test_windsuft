@@ -1,7 +1,7 @@
 <?php
-require_once '../../config/database.php';
-require_once '../../utils/functions.php';
-require_once '../../vendor/autoload.php'; // Thêm autoload cho PhpSpreadsheet
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../utils/functions.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -17,6 +17,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || !$_SESSION[
 }
 
 try {
+    // Khởi tạo kết nối
     $db = Database::getInstance();
     $conn = $db->getConnection();
 
@@ -163,8 +164,10 @@ try {
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment;filename="bao-cao-hoat-dong.xlsx"');
     header('Cache-Control: max-age=0');
+    header('Cache-Control: must-revalidate');
 
     // Save the spreadsheet to PHP output
+    ob_end_clean(); // Clear output buffer
     $writer = new Xlsx($spreadsheet);
     $writer->save('php://output');
     exit;

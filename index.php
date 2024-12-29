@@ -44,7 +44,7 @@ require_once __DIR__ . '/layouts/header.php';
           <dd class="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
             <p class="flex-auto"><?php echo htmlspecialchars($activity['MoTa']); ?></p>
             <p class="mt-6">
-              <a href="<?php echo BASE_URL; ?>/hoatdong/detail.php?id=<?php echo $activity['Id']; ?>" class="text-sm font-semibold leading-6 text-indigo-600">Xem chi tiết <span aria-hidden="true">→</span></a>
+              <a href="<?php echo BASE_URL; ?>/activities/view_activity.php?id=<?php echo $activity['Id']; ?>" class="text-sm font-semibold leading-6 text-indigo-600">Xem chi tiết <span aria-hidden="true">→</span></a>
             </p>
           </dd>
         </div>
@@ -82,7 +82,7 @@ require_once __DIR__ . '/layouts/header.php';
                     </div>
                 </div>
                 <div class="absolute bottom-5 right-5">
-                    <a href="/news/detail.php?id=<?php echo $item['Id']; ?>" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
+                    <a href="/test_windsuft/news/detail.php?id=<?php echo $item['Id']; ?>" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
                         Đọc thêm
                         <i class="fas fa-arrow-right ml-2"></i>
                     </a>

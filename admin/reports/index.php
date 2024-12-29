@@ -275,14 +275,15 @@ new Chart(taskCtx, {
 function exportReport() {
     const startDate = document.querySelector('input[name="startDate"]').value;
     const endDate = document.querySelector('input[name="endDate"]').value;
-    window.location.href = `export.php?startDate=${startDate}&endDate=${endDate}`;
+    // Sử dụng đường dẫn tuyệt đối
+    window.location.href = '/test_windsuft/admin/reports/export.php?startDate=' + startDate + '&endDate=' + endDate;
 }
 
 document.getElementById('filterForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const startDate = this.elements.startDate.value;
     const endDate = this.elements.endDate.value;
-    window.location.href = `index.php?startDate=${startDate}&endDate=${endDate}`;
+    window.location.href = 'index.php?startDate=' + startDate + '&endDate=' + endDate;
 });
 </script>
 

@@ -13,6 +13,7 @@ $auth->requireAdmin();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($pageTitle) ? $pageTitle : 'Admin Dashboard'; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
 </head>
 <body class="bg-gray-100">
@@ -41,7 +42,6 @@ $auth->requireAdmin();
                         <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow" id="dropdown-user">
                             <div class="px-4 py-3" role="none">
                                 <p class="text-sm text-gray-900" role="none">
-                                <?php echo str_replace('../', BASE_URL . '/', $_SESSION['avatar']); ?>
                                     <?php echo $_SESSION['name'] ?? 'Admin'; ?>
                                 </p>
                                 <p class="text-sm font-medium text-gray-900 truncate" role="none">
@@ -50,7 +50,7 @@ $auth->requireAdmin();
                             </div>
                             <ul class="py-1" role="none">
                                 <li>
-                                    <a href="/test_windsuft/admin/profile.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Hồ sơ</a>
+                                    <a href="/test_windsuft/profile.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Hồ sơ</a>
                                 </li>
                                 <li>
                                     <a href="/test_windsuft/logout.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Đăng xuất</a>
@@ -130,21 +130,27 @@ $auth->requireAdmin();
                     <a href="/test_windsuft/admin/reports" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                         <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M0 2.5A1.5 1.5 0 0 1 1.5 1h8A1.5 1.5 0 0 1 11 2.5v2A1.5 1.5 0 0 1 9.5 6h-8A1.5 1.5 0 0 1 0 4.5v-2ZM1.5 2a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-8ZM0 8.5A1.5 1.5 0 0 1 1.5 7h8A1.5 1.5 0 0 1 11 8.5v2A1.5 1.5 0 0 1 9.5 12h-8A1.5 1.5 0 0 1 0 10.5v-2ZM1.5 8a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-8Z"/>
-                        </svg>
-                        <span class="flex-1 ml-3 whitespace-nowrap">Báo cáo & Thống kê</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/test_windsuft/logout.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
-                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"/>
-                        </path>
                     </svg>
-                    <span class="flex-1 ml-3 whitespace-nowrap">Đăng xuất</span>
+                    <span class="flex-1 ml-3 whitespace-nowrap">Báo cáo & Thống kê</span>
                 </a>
             </li>
-        </ul>
-    </div>
+            <li>
+                <a href="/test_windsuft/admin/positions" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                    <i class="fas fa-user-tag w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                    <span class="ml-3">Chức vụ</span>
+                </a>
+            </li>
+            <li>
+                <a href="/test_windsuft/logout.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                    <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"/>
+                    </path>
+                </svg>
+                <span class="flex-1 ml-3 whitespace-nowrap">Đăng xuất</span>
+            </a>
+        </li>
+    </ul>
+</div>
 </aside>
 
 <div class="p-4 sm:ml-64">

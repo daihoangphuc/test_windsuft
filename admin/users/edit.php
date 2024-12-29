@@ -15,9 +15,8 @@ if (!$user_id) {
 }
 
 // Lấy thông tin người dùng
-$stmt = $db->prepare("SELECT n.*, v.VaiTroId 
-                      FROM nguoidung n 
-                      LEFT JOIN vaitronguoidung v ON n.Id = v.NguoiDungId 
+$stmt = $db->prepare("SELECT n.*
+                      FROM nguoidung n  
                       WHERE n.Id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
