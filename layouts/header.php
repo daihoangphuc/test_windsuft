@@ -14,32 +14,32 @@ $auth = new Auth();
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
 </head>
-<body class="bg-gray-50">
-    <nav class="bg-white border-gray-200">
+<body class="bg-[#f8f9fa]">
+    <nav class="bg-white shadow-md">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
             <a href="<?php echo BASE_URL; ?>/" class="flex items-center space-x-3 rtl:space-x-reverse">
-                <span class="self-center text-2xl font-semibold whitespace-nowrap ">CLB HSTV</span>
+                <span class="self-center text-2xl font-semibold whitespace-nowrap text-[#4a90e2]">CLB HSTV</span>
             </a>
-            <button data-collapse-toggle="navbar-default" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200" aria-controls="navbar-default" aria-expanded="false">
+            <button data-collapse-toggle="navbar-default" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-[#fce7f3] focus:outline-none focus:ring-2 focus:ring-[#4a90e2]" aria-controls="navbar-default" aria-expanded="false">
                 <span class="sr-only">Open main menu</span>
                 <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
                 </svg>
             </button>
             <div class="hidden w-full md:block md:w-auto" id="navbar-default">
-                <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white ">
+                <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-[#e3f2fd] rounded-lg bg-white md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0">
                     <li>
-                        <a href="<?php echo BASE_URL; ?>/" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0">Trang chủ</a>
+                        <a href="<?php echo BASE_URL; ?>/" class="block py-2 px-3 text-gray-900 rounded hover:bg-[#fce7f3] md:hover:bg-transparent md:border-0 md:hover:text-[#4a90e2] md:p-0 transition duration-300">Trang chủ</a>
                     </li>
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li>
-                            <a href="<?php echo BASE_URL; ?>/activities" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0">Hoạt động</a>
+                            <a href="<?php echo BASE_URL; ?>/activities" class="block py-2 px-3 text-gray-900 rounded hover:bg-[#fce7f3] md:hover:bg-transparent md:border-0 md:hover:text-[#4a90e2] md:p-0 transition duration-300">Hoạt động</a>
                         </li>
                         <li>
-                            <a href="<?php echo BASE_URL; ?>/activities/my_activities.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0">Hoạt động của tôi</a>
+                            <a href="<?php echo BASE_URL; ?>/activities/my_activities.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-[#fce7f3] md:hover:bg-transparent md:border-0 md:hover:text-[#4a90e2] md:p-0 transition duration-300">Hoạt động của tôi</a>
                         </li>
                         <li>
-                            <a href="<?php echo BASE_URL; ?>/tasks/my_tasks.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0">Nhiệm vụ</a>
+                            <a href="<?php echo BASE_URL; ?>/tasks/my_tasks.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-[#fce7f3] md:hover:bg-transparent md:border-0 md:hover:text-[#4a90e2] md:p-0 transition duration-300">Nhiệm vụ</a>
                         </li>
                     <?php endif; ?>
                 </ul>
@@ -48,7 +48,7 @@ $auth = new Auth();
                 <div class="relative ml-3" x-data="{ open: false }">
                     <div>
                         <button @click="open = !open" 
-                                class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition duration-150 ease-in-out">
+                                class="flex text-sm border-2 border-[#4a90e2] rounded-full focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition duration-300">
                             <img class="h-8 w-8 rounded-full object-cover" 
                                  src="<?php echo str_replace('../', BASE_URL . '/', $_SESSION['avatar']); ?>" 
                                  alt="Avatar">

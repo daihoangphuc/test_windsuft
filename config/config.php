@@ -1,4 +1,7 @@
 <?php
+// Include database configuration
+require_once __DIR__ . '/database.php';
+
 // Base URL configuration
 define('BASE_URL', 'http://localhost:81/test_windsuft');
 
@@ -17,6 +20,10 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.use_only_cookies', 1);
     session_start();
 }
+
+// Initialize database connection
+$database = Database::getInstance();
+$conn = $database->getConnection();
 
 // Function to get base URL
 function base_url($path = '') {
