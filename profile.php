@@ -8,6 +8,11 @@ $auth->requireLogin();
 $db = Database::getInstance()->getConnection();
 $userId = $_SESSION['user_id'];
 
+// Lấy danh sách lớp học
+$stmtLopHoc = $db->prepare("SELECT Id, TenLop FROM lophoc ORDER BY TenLop ASC");
+$stmtLopHoc->execute();
+$danhSachLop = $stmtLopHoc->get_result();
+
 // Lấy thông tin người dùng
 $stmt = $db->prepare("SELECT n.*, l.TenLop, cv.TenChucVu 
                       FROM nguoidung n 
@@ -26,14 +31,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ngaySinh = $_POST['ngay_sinh'];
         $gioiTinh = $_POST['gioi_tinh'];
         $maSinhVien = $_POST['ma_sinh_vien'];
+        $lopHocId = $_POST['lop_hoc'];
 
-        $stmt = $db->prepare("UPDATE nguoidung SET HoTen = ?, Email = ?, NgaySinh = ?, GioiTinh = ?, MaSinhVien = ? WHERE Id = ?");
-        $stmt->bind_param("sssisi", $hoTen, $email, $ngaySinh, $gioiTinh, $maSinhVien, $userId);
-        
-        if ($stmt->execute()) {
-            $_SESSION['flash_message'] = "Cập nhật thông tin thành công!";
+        // Kiểm tra email trùng lặp
+        $checkEmail = $db->prepare("SELECT Id FROM nguoidung WHERE Email = ? AND Id != ?");
+        $checkEmail->bind_param("si", $email, $userId);
+        $checkEmail->execute();
+        $emailResult = $checkEmail->get_result();
+
+        // Kiểm tra mã sinh viên trùng lặp
+        $checkMaSV = $db->prepare("SELECT Id FROM nguoidung WHERE MaSinhVien = ? AND Id != ?");
+        $checkMaSV->bind_param("si", $maSinhVien, $userId);
+        $checkMaSV->execute();
+        $maSVResult = $checkMaSV->get_result();
+
+        if ($emailResult->num_rows > 0) {
+            $_SESSION['flash_error'] = "Email này đã được sử dụng bởi người dùng khác!";
+        } elseif ($maSVResult->num_rows > 0) {
+            $_SESSION['flash_error'] = "Mã sinh viên này đã được sử dụng bởi người dùng khác!";
         } else {
-            $_SESSION['flash_error'] = "Lỗi khi cập nhật thông tin!";
+            $stmt = $db->prepare("UPDATE nguoidung SET HoTen = ?, Email = ?, NgaySinh = ?, GioiTinh = ?, MaSinhVien = ?, LopHocId = ? WHERE Id = ?");
+            $stmt->bind_param("ssssisi", $hoTen, $email, $ngaySinh, $gioiTinh, $maSinhVien, $lopHocId, $userId);
+            
+            if ($stmt->execute()) {
+                $_SESSION['flash_message'] = "Cập nhật thông tin thành công!";
+            } else {
+                $_SESSION['flash_error'] = "Lỗi khi cập nhật thông tin!";
+            }
         }
     }
     
@@ -152,7 +176,7 @@ require_once 'layouts/header.php';
             <!-- Sidebar với ảnh đại diện -->
             <div class="md:w-1/3 p-4 bg-gray-50">
                 <div class="text-center">
-                    <img src="<?php echo str_replace('../', BASE_URL . '/', $_SESSION['avatar']); ?>" alt="user photo"" 
+                    <img src="<?php echo str_replace('../', BASE_URL . '/', $_SESSION['avatar']); ?>" alt="user photo"
                          alt="Avatar" 
                          class="w-48 h-48 rounded-full mx-auto mb-4 object-cover border-4 border-blue-500">
                     
@@ -233,8 +257,14 @@ require_once 'layouts/header.php';
                             
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900">Lớp</label>
-                                <input type="text" value="<?php echo htmlspecialchars($user['TenLop']); ?>" disabled
-                                       class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+                                <select name="lop_hoc" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                    <option value="">Chọn lớp</option>
+                                    <?php while ($lop = $danhSachLop->fetch_assoc()): ?>
+                                        <option value="<?php echo $lop['Id']; ?>" <?php echo ($user['LopHocId'] == $lop['Id']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($lop['TenLop']); ?>
+                                        </option>
+                                    <?php endwhile; ?>
+                                </select>
                             </div>
                             
                             <div>

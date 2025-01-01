@@ -100,14 +100,14 @@ require_once __DIR__ . '/layouts/header.php';
 
     <?php if (!empty($leaders)): ?>
 <div class="mx-auto mt-16 max-w-5xl">
-  <h3 class="text-2xl font-bold mb-6 text-[#4a90e2]">Ban chủ nhiệm</h3>
+  <h3 class="text-2xl font-bold mb-6 text-center text-[#4a90e2]">Ban chủ nhiệm</h3>
   <!-- Wrapper to prevent overflow -->
   <div class="overflow-hidden">
     <div class="swiper-container">
       <div class="swiper-wrapper">
         <?php foreach ($leaders as $leader): ?>
         <div class="swiper-slide">
-          <div class="bg-white shadow-md rounded-lg overflow-hidden">
+          <div class="bg-white rounded-lg overflow-hidden">
             <div class="flex justify-center mt-4">
               <div class="w-48 h-48 rounded-full border-4 border-blue-200 overflow-hidden">
                 <img src="<?php echo str_replace('../', BASE_URL . '/', $leader['anhdaidien']); ?>" 

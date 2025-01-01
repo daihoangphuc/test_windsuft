@@ -73,7 +73,7 @@ require_once '../layouts/header.php';
 
 <div class="p-4">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Danh sách hoạt động</h2>
+        <h2 class="text-2xl font-bold text-gray-800">Danh sách hoạt động</h2>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Khám phá và đăng ký tham gia các hoạt động sắp diễn ra</p>
     </div>
 

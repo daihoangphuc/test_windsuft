@@ -128,6 +128,14 @@ require_once __DIR__ . '/layouts/header.php';
                     Đăng nhập
                 </button>
             </div>
+            <a href="<?php echo base_url('/google-login.php'); ?>" 
+                       class="group relative w-full flex justify-center py-3 px-4 border border-transparent 
+                               text-sm font-medium rounded-lg text-black bg-white-200 hover:bg-blue-700 hover:text-white
+                               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-100 
+                               transition duration-150 ease-in-out">
+                        <img src="https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png" alt="Google Login" class="w-5 h-5 mr-2">
+                        Đăng nhập với Google
+                    </a>
         </form>
 
         <div class="mt-6">
