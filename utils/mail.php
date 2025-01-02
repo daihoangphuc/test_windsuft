@@ -13,17 +13,26 @@ class Mailer {
         
         // Server settings
         $this->mail->isSMTP();
-        $this->mail->Host = 'smtp.gmail.com'; // TODO: Update with your SMTP host
+        $this->mail->Host = 'smtp.gmail.com'; 
         $this->mail->SMTPAuth = true;
-        $this->mail->Username = ''; // TODO: Add your email
-        $this->mail->Password = ''; // TODO: Add your app password
+        $this->mail->Username = 'clbhtsvtvu@gmail.com'; 
+        $this->mail->Password = 'rkkarxwvyluwgsbe'; 
         $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $this->mail->Port = 587;
         $this->mail->CharSet = 'UTF-8';
         
+        // Disable SSL verification (chỉ dùng trong môi trường development)
+        $this->mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+        
         // Default settings
         $this->mail->isHTML(true);
-        $this->mail->setFrom('your-email@example.com', 'CLB HSTV'); // TODO: Update with your email
+        $this->mail->setFrom('clbhtsvtvu@gmail.com', 'CLB HSTV'); 
     }
     
     public static function getInstance() {
@@ -35,7 +44,7 @@ class Mailer {
     
     public function sendPasswordReset($email, $token) {
         try {
-            $reset_link = "http://localhost/test_windsuft/reset-password.php?token=" . $token;
+            $reset_link = "http://{$_SERVER['HTTP_HOST']}/test_windsuft/reset-password.php?token=" . $token;
             
             $this->mail->addAddress($email);
             $this->mail->Subject = 'Khôi phục mật khẩu - CLB HSTV';
@@ -47,6 +56,9 @@ class Mailer {
                 <p><a href='{$reset_link}'>{$reset_link}</a></p>
                 <p>Link này sẽ hết hạn sau 1 giờ.</p>
                 <p>Nếu bạn không yêu cầu khôi phục mật khẩu, vui lòng bỏ qua email này.</p>
+                <br>
+                <p>Trân trọng,</p>
+                <p>CLB HSTV</p>
             ";
             
             return $this->mail->send();

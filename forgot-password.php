@@ -1,8 +1,7 @@
 <?php
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/utils/mail.php';
-
-session_start();
+require_once __DIR__ . '/layouts/header.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
@@ -14,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db = Database::getInstance()->getConnection();
             
             // Check if email exists
-            $stmt = $db->prepare("SELECT Id FROM nguoidung WHERE Email = ?");
+            $stmt = $db->prepare("SELECT Id, HoTen FROM nguoidung WHERE Email = ?");
             $stmt->bind_param("s", $email);
             $stmt->execute();
             $user = $stmt->get_result()->fetch_assoc();
@@ -30,10 +29,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 if ($stmt->execute()) {
                     // Send reset email
+                    $reset_link = "http://{$_SERVER['HTTP_HOST']}/test_windsuft/reset-password.php?token=" . $token;
                     $mailer = Mailer::getInstance();
-                    $mailer->sendPasswordReset($email, $token);
-                    
-                    $_SESSION['flash_message'] = "Hướng dẫn khôi phục mật khẩu đã được gửi đến email của bạn.";
+                    if ($mailer->sendPasswordReset($email, $token)) {
+                        // Log activity
+                        require_once __DIR__ . '/utils/functions.php';
+                        log_activity(
+                            $_SERVER['REMOTE_ADDR'],
+                            $user['Id'],
+                            'Yêu cầu khôi phục mật khẩu',
+                            'Thành công',
+                            "Đã gửi email khôi phục mật khẩu"
+                        );
+                        
+                        $_SESSION['flash_message'] = "Hướng dẫn khôi phục mật khẩu đã được gửi đến email {$email} của bạn. Vui lòng kiểm tra hòm thư trong vòng 1 giờ.";
+                    } else {
+                        throw new Exception("Không thể gửi email khôi phục mật khẩu");
+                    }
                 } else {
                     throw new Exception("Không thể tạo yêu cầu khôi phục mật khẩu");
                 }
@@ -94,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div>
-                <button type="submit" class="flex w-full justify-center rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
+                <button type="submit" class="flex w-full justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
                     Gửi yêu cầu khôi phục
                 </button>
             </div>

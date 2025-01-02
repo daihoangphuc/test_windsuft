@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/config/database.php';
-
-session_start();
+require_once __DIR__ . '/layouts/header.php';
 
 $token = $_GET['token'] ?? '';
 $error = '';
@@ -95,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div>
-                <button type="submit" class="flex w-full justify-center rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
+                <button type="submit" class="flex w-full justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
                     Đặt lại mật khẩu
                 </button>
             </div>

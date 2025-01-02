@@ -35,7 +35,7 @@ $pageTitle = 'Đăng nhập';
 require_once __DIR__ . '/layouts/header.php';
 ?>
 
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+<div class="min-h-screen lg:px-8 flex items-center justify-center">
     <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
         <div class="text-center">
             <h2 class="text-3xl font-bold text-gray-900 mb-2">
@@ -129,7 +129,7 @@ require_once __DIR__ . '/layouts/header.php';
                 </button>
             </div>
             <a href="<?php echo base_url('/google-login.php'); ?>" 
-                       class="group relative w-full flex justify-center py-3 px-4 border border-transparent 
+                       class="group relative w-full flex justify-center py-3 px-4 border border-blue-300 
                                text-sm font-medium rounded-lg text-black bg-white-200 hover:bg-blue-700 hover:text-white
                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-100 
                                transition duration-150 ease-in-out">
