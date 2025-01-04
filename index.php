@@ -25,18 +25,106 @@ $pageTitle = 'Trang chủ';
 require_once __DIR__ . '/layouts/header.php';
 ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
-<div class="bg-white py-24 sm:py-32">
-  <div class="mx-auto max-w-7xl px-6 lg:px-8">
-    <div class="mx-auto max-w-2xl text-center">
-      <h2 class="text-3xl font-bold tracking-tight text-[#4a90e2] sm:text-4xl">Câu lạc bộ Hành trình sinh viên</h2>
-      <p class="mt-2 text-lg leading-8 text-gray-600">Nơi kết nối và phát triển tài năng</p>
+<script>
+    $(document).ready(function() {
+        $("#draggableBanner").draggable({
+            containment: "parent",
+            cursor: "move"
+        });
+    });
+</script>
+<!-- Marquee cho hoạt động và tin tức -->
+<div class="bg-[#4a90e2] text-white py-2">
+    <div class="flex items-center">
+        <div class="flex-shrink-0 px-4 py-1 bg-[#2563eb] rounded-r-full">
+            <span class="font-semibold">Thông báo</span>
+        </div>
+        <div class="flex-1 overflow-hidden">
+            <div class="marquee-container">
+                <div class="marquee-content">
+                    <?php foreach ($activities as $activity): ?>
+                        <span class="mx-4">
+                            📅 <?php echo htmlspecialchars($activity['TenHoatDong']); ?> 
+                            (<?php echo date('d/m/Y', strtotime($activity['NgayBatDau'])); ?>)
+                        </span>
+                    <?php endforeach; ?>
+                    <?php foreach ($news as $item): ?>
+                        <span class="mx-4">
+                            📰 <?php echo htmlspecialchars($item['TieuDe']); ?>
+                        </span>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.marquee-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.marquee-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee 30s linear infinite;
+}
+
+.marquee-content:hover {
+    animation-play-state: paused;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.marquee-content span {
+    display: inline-block;
+    padding-right: 50px;
+}
+</style>
+<div class="bg-white">
+    <div class="relative bg-white" style="min-height: 250px;">
+        <div class="container mx-auto h-full px-4 py-8">
+            <div class="flex flex-col md:flex-row h-full items-center gap-8">
+                <!-- Video Container - Left Side -->
+                <div class="w-full md:w-1/2">
+                    <div class="relative aspect-video bg-black rounded-lg overflow-hidden">
+                        <iframe 
+                            src="https://drive.google.com/file/d/1h79MdeRSwyTFtBs216L3pKRJCsSCU3kn/preview" 
+                            class="absolute top-0 left-0 w-full h-full"
+                            allow="autoplay"
+                            frameborder="0"
+                        ></iframe>
+                    </div>
+                </div>
+                <!-- Text Container - Right Side -->
+                <div class="w-full md:w-1/2">
+                    <div class="text-center px-4 sm:px-8 py-6 rounded-lg">
+                        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#4a90e2] mb-4 drop-shadow-lg">Câu lạc bộ</h2>
+                        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#ff66c2] mb-4 drop-shadow-lg">Hành trình sinh viên</h2>
+                        <p class="text-lg sm:text-xl text-[#4a90e2] drop-shadow-lg">Nơi kết nối và phát triển tài năng</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <?php if (!empty($activities)): ?>
-    <div class="mx-auto mt-16 max-w-7xl px-6 lg:px-8 mt-8">
+    <div class="mx-auto mt-16 max-w-7xl px-6 lg:px-8">
       <div class="mx-auto max-w-2xl lg:mx-0">
-        <h2 class="text-3xl font-bold tracking-tight text-[#4a90e2] sm:text-4xl">Hoạt động sắp diễn ra</h2>
+        <h2 class="text-3xl font-bold tracking-tight text-[#4a90e2] sm:text-4xl text">Hoạt động sắp diễn ra</h2>
         <p class="mt-2 text-lg leading-8 text-gray-600">Tham gia các hoạt động thú vị cùng CLB HSTV</p>
       </div>
       <div class="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-t border-[#e3f2fd] pt-10 sm:mt-16 sm:pt-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
@@ -44,7 +132,14 @@ require_once __DIR__ . '/layouts/header.php';
         <div class="flex max-w-xl flex-col items-start justify-between bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
           <div class="flex items-center gap-x-4 text-xs">
             <time datetime="<?php echo $activity['NgayBatDau']; ?>" class="text-[#4a90e2]"><?php echo date('d/m/Y', strtotime($activity['NgayBatDau'])); ?></time>
-            <span class="relative z-10 rounded-full bg-[#fce7f3] px-3 py-0.5 font-medium text-[#4a90e2]"><?php echo htmlspecialchars($activity['TrangThai']); ?></span>
+            <?php
+            $stmt = $db->prepare("SELECT COUNT(NguoiDungId) as count FROM danhsachdangky WHERE HoatDongId = ?");
+            $stmt->bind_param("i", $activity['Id']);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc();
+            $count = $result['count'];
+            ?>
+            <span class="relative z-10 rounded-full bg-[#fce7f3] px-3 py-0.5 font-medium text-[#4a90e2]"><?php echo "Đã đăng ký: " . htmlspecialchars($count); ?></span>
           </div>
           <div class="group relative">
             <h3 class="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-[#4a90e2] transition duration-300">
@@ -123,9 +218,7 @@ require_once __DIR__ . '/layouts/header.php';
         </div>
         <?php endforeach; ?>
       </div>
-      <!-- Add navigation -->
-      <div class="swiper-button-next"></div>
-      <div class="swiper-button-prev"></div>
+
     </div>
   </div>
 </div>
@@ -151,6 +244,20 @@ require_once __DIR__ . '/layouts/header.php';
         768: { slidesPerView: 2, spaceBetween: 30 },
         1024: { slidesPerView: 3, spaceBetween: 40 },
       },
+    });
+    new Swiper('.bannerSwiper', {
+      slidesPerView: 1,
+      spaceBetween: 30,
+      loop: true,
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+      effect: 'none',
+      autoplay: {
+        delay: 3000,
+        disableOnInteraction: false,
+      }
     });
   });
 </script>

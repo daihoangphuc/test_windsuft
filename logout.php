@@ -6,6 +6,7 @@ $auth = new Auth();
 $auth->logout();
 
 $_SESSION['flash_message'] = 'Đăng xuất thành công!';
+$_SESSION['flash_type'] = 'success';
 header('Location: ' . base_url('/login.php'));
 exit();
 ?>

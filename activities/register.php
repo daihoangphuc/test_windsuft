@@ -22,13 +22,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     // Check if activity exists and is active
-    $stmt = $db->prepare("SELECT * FROM hoatdong WHERE Id = ? AND TrangThai = 1");
+    $stmt = $db->prepare("SELECT * FROM hoatdong WHERE Id = ? AND TrangThai = 0");
     $stmt->bind_param("i", $activityId);
     $stmt->execute();
     $activity = $stmt->get_result()->fetch_assoc();
     
     if (!$activity) {
-        echo json_encode(['success' => false, 'message' => 'Hoạt động không tồn tại hoặc đã kết thúc']);
+        echo json_encode(['success' => false, 'message' => 'Hoạt động không tồn tại hoặc không trong thời gian đăng ký']);
+        exit;
+    }
+    
+    // Check if registration is still open
+    $now = new DateTime();
+    $start = new DateTime($activity['NgayBatDau']);
+    if ($now > $start) {
+        echo json_encode(['success' => false, 'message' => 'Đã quá thời gian đăng ký']);
         exit;
     }
     
@@ -64,12 +72,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Không thể đăng ký. Vui lòng thử lại sau']);
         }
     } else {
-        // Cancel registration
-        $stmt = $db->prepare("UPDATE danhsachdangky SET TrangThai = 0 WHERE HoatDongId = ? AND NguoiDungId = ? AND TrangThai = 1");
+        // Cancel registration - Chỉ đơn giản xóa khỏi bảng danhsachdangky
+        $stmt = $db->prepare("DELETE FROM danhsachdangky WHERE HoatDongId = ? AND NguoiDungId = ?");
         $stmt->bind_param("ii", $activityId, $_SESSION['user_id']);
         
         if ($stmt->execute()) {
-            echo json_encode(['success' => true]);
+            try {
+                // Ghi log sau khi xóa thành công
+                $logStmt = $db->prepare("INSERT INTO hoatdonglog (HoatDongId, NguoiDungId, HanhDong, ThoiGian, GhiChu) VALUES (?, ?, 'HUY_DANG_KY', NOW(), 'Hủy đăng ký hoạt động')");
+                $logStmt->bind_param("ii", $activityId, $_SESSION['user_id']);
+                $logStmt->execute();
+            } catch (Exception $e) {
+                // Bỏ qua lỗi ghi log, vẫn trả về thành công vì đã xóa được đăng ký
+            }
+            
+            echo json_encode(['success' => true, 'message' => 'Đã hủy đăng ký thành công']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Không thể hủy đăng ký. Vui lòng thử lại sau']);
         }

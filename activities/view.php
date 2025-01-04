@@ -55,6 +55,10 @@ $stmt->bind_param("ii", $_SESSION['user_id'], $activityId);
 $stmt->execute();
 $participation = $stmt->get_result()->fetch_assoc();
 
+$isRegistered = !empty($registration);
+$remainingSlots = getRemainingSlots($activity['SoLuong'], $activity['TongDangKy']);
+$percentage = getRegistrationPercentage($activity['SoLuong'], $activity['TongDangKy']);
+
 $pageTitle = $activity['TenHoatDong'];
 ob_start();
 ?>
@@ -69,69 +73,182 @@ ob_start();
                 <?php unset($_SESSION['error']); ?>
             <?php endif; ?>
 
-            <h2 class="text-2xl font-bold mb-4"><?php echo htmlspecialchars($activity['TenHoatDong']); ?></h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <p class="text-gray-600">Thời gian bắt đầu</p>
-                    <p class="font-medium"><?php echo format_datetime($activity['NgayBatDau']); ?></p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Thời gian kết thúc</p>
-                    <p class="font-medium"><?php echo format_datetime($activity['NgayKetThuc']); ?></p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Địa điểm</p>
-                    <p class="font-medium"><?php echo htmlspecialchars($activity['DiaDiem']); ?></p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Số lượng đăng ký</p>
-                    <p class="font-medium">
-                        <?php echo $activity['TongDangKy']; ?>
-                        <?php echo $activity['SoLuong'] > 0 ? '/' . $activity['SoLuong'] : ''; ?>
-                    </p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Số lượng tham gia</p>
-                    <p class="font-medium"><?php echo $activity['TongThamGia']; ?></p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Người tạo</p>
-                    <p class="font-medium"><?php echo htmlspecialchars($activity['NguoiTao']); ?></p>
-                </div>
-                <?php if ($activity['ToaDo']): ?>
-                <div class="col-span-2">
-                    <p class="text-gray-600">Bản đồ</p>
-                    <div id="map" class="h-64 w-full rounded-lg mt-2"></div>
-                </div>
-                <?php endif; ?>
+            <div class="flex justify-between items-start mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">
+                    <?php echo htmlspecialchars($activity['TenHoatDong']); ?>
+                </h1>
+                <span class="px-3 py-1 rounded-full text-sm font-medium <?php echo getStatusClass($activity['TrangThai']); ?>">
+                    <?php echo getStatusText($activity['TrangThai']); ?>
+                </span>
             </div>
 
-            <div class="mb-4">
-                <p class="text-gray-600">Mô tả</p>
-                <p class="whitespace-pre-line"><?php echo nl2br(htmlspecialchars($activity['MoTa'])); ?></p>
-            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Thông tin chung</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <i class="fas fa-calendar-alt w-5 mt-1 text-gray-500"></i>
+                                <div class="ml-3">
+                                    <p class="text-gray-600">Thời gian bắt đầu</p>
+                                    <p class="font-medium"><?php echo formatDateTime($activity['NgayBatDau']); ?></p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-calendar-check w-5 mt-1 text-gray-500"></i>
+                                <div class="ml-3">
+                                    <p class="text-gray-600">Thời gian kết thúc</p>
+                                    <p class="font-medium"><?php echo formatDateTime($activity['NgayKetThuc']); ?></p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-map-marker-alt w-5 mt-1 text-gray-500"></i>
+                                <div class="ml-3">
+                                    <p class="text-gray-600">Địa điểm</p>
+                                    <p class="font-medium">
+                                        <?php echo htmlspecialchars($activity['DiaDiem']); ?>
+                                        <?php if ($activity['ToaDo']): ?>
+                                            <a href="https://www.google.com/maps?q=<?php echo $activity['ToaDo']; ?>" 
+                                               target="_blank" 
+                                               class="text-blue-600 hover:underline ml-2">
+                                                <i class="fas fa-external-link-alt"></i> Xem bản đồ
+                                            </a>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="flex gap-4">
-                <?php if (!$registration && !$participation): ?>
-                    <?php if (strtotime($activity['NgayKetThuc']) > time()): ?>
-                        <a href="register.php?id=<?php echo $activity['Id']; ?>" 
-                           class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            Đăng ký tham gia
-                        </a>
+                    <?php if (!empty($activity['MoTa'])): ?>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Mô tả</h3>
+                        <div class="prose max-w-none">
+                            <?php echo nl2br(htmlspecialchars($activity['MoTa'])); ?>
+                        </div>
+                    </div>
                     <?php endif; ?>
-                <?php elseif ($registration && !$participation): ?>
-                    <form method="post" action="register.php?id=<?php echo $activity['Id']; ?>">
-                        <button type="submit" name="unregister" 
-                                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                            Hủy đăng ký
-                        </button>
-                    </form>
-                <?php endif; ?>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Thống kê tham gia</h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span class="text-gray-600">Số lượng đăng ký</span>
+                                        <span class="font-medium">
+                                            <?php echo "{$activity['TongDangKy']}/{$activity['SoLuong']}"; ?>
+                                        </span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="h-2 rounded-full <?php echo $percentage >= 90 ? 'bg-red-600' : 'bg-blue-600'; ?>"
+                                             style="width: <?php echo $percentage; ?>%">
+                                        </div>
+                                    </div>
+                                    <?php if ($remainingSlots <= 5 && $remainingSlots > 0): ?>
+                                        <p class="text-sm text-red-600 mt-1">
+                                            Chỉ còn <?php echo $remainingSlots; ?> slot!
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="flex items-center justify-between py-2 border-t border-gray-200">
+                                    <span class="text-gray-600">Đã tham gia</span>
+                                    <span class="font-medium"><?php echo $activity['TongThamGia']; ?> người</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <?php if (!$isRegistered): ?>
+                            <?php if (canRegister($activity)): ?>
+                                <button onclick="registerActivity(<?php echo $activity['Id']; ?>)"
+                                        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
+                                    Đăng ký tham gia
+                                </button>
+                            <?php elseif ($remainingSlots <= 0): ?>
+                                <button disabled class="w-full bg-gray-300 text-gray-500 py-3 px-4 rounded-lg cursor-not-allowed">
+                                    Đã đủ số lượng
+                                </button>
+                            <?php elseif ($activity['TrangThai'] != 0): ?>
+                                <button disabled class="w-full bg-gray-300 text-gray-500 py-3 px-4 rounded-lg cursor-not-allowed">
+                                    Không trong thời gian đăng ký
+                                </button>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                                <p class="text-green-800">Bạn đã đăng ký tham gia hoạt động này</p>
+                                <button onclick="unregisterActivity(<?php echo $activity['Id']; ?>)"
+                                        class="mt-2 text-red-600 hover:text-red-800">
+                                    Hủy đăng ký
+                                </button>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function registerActivity(activityId) {
+    if (confirm('Bạn có chắc chắn muốn đăng ký tham gia hoạt động này?')) {
+        fetch('register.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                activityId: activityId,
+                action: 'register'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showFlash(data.message || 'Đăng ký thành công!', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showFlash(data.message || 'Có lỗi xảy ra!', 'error');
+            }
+        })
+        .catch(error => {
+            showFlash('Có lỗi xảy ra!', 'error');
+        });
+    }
+}
+
+function unregisterActivity(activityId) {
+    if (confirm('Bạn có chắc chắn muốn hủy đăng ký hoạt động này?')) {
+        fetch('register.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                activityId: activityId,
+                action: 'unregister'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showFlash(data.message || 'Hủy đăng ký thành công!', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showFlash(data.message || 'Có lỗi xảy ra!', 'error');
+            }
+        })
+        .catch(error => {
+            showFlash('Có lỗi xảy ra!', 'error');
+        });
+    }
+}
+</script>
 
 <?php if ($activity['ToaDo']): ?>
 <script>
@@ -159,5 +276,7 @@ function initMap() {
 
 <?php
 $content = ob_get_clean();
-require_once '../layout.php';
+require_once '../layouts/header.php';
+echo $content;
+require_once '../layouts/footer.php';
 ?>

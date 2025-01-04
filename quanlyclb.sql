@@ -58,7 +58,7 @@ CREATE TABLE `danhsachthamgia` (
   `NguoiDungId` int(11) DEFAULT NULL,
   `HoatDongId` int(11) DEFAULT NULL,
   `DiemDanhLuc` datetime DEFAULT current_timestamp(),
-  `TrangThai` tinyint(4) NOT NULL DEFAULT 1
+  `TrangThai` tinyint(4) NOT NULL DEFAULT 1 ; -- 0: Vắng, 1: Đã tham gia
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

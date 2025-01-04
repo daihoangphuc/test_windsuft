@@ -148,4 +148,77 @@ class Activity {
                  END";
         $this->db->query($query);
     }
+
+    public function updateStatus($activityId) {
+        $now = new DateTime();
+        $query = "SELECT NgayBatDau, NgayKetThuc FROM hoatdong WHERE Id = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $activityId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $activity = $result->fetch_assoc();
+
+        if ($activity) {
+            $start = new DateTime($activity['NgayBatDau']);
+            $end = new DateTime($activity['NgayKetThuc']);
+            
+            if ($now < $start) {
+                $status = 0; // Sắp diễn ra
+            } elseif ($now >= $start && $now <= $end) {
+                $status = 1; // Đang diễn ra
+            } else {
+                $status = 2; // Đã kết thúc
+            }
+
+            $updateQuery = "UPDATE hoatdong SET TrangThai = ? WHERE Id = ?";
+            $updateStmt = $this->db->prepare($updateQuery);
+            $updateStmt->bind_param("ii", $status, $activityId);
+            return $updateStmt->execute();
+        }
+        return false;
+    }
+
+    public function getRemainingSlots($activityId) {
+        $query = "SELECT h.SoLuong, COUNT(dk.Id) as registered 
+                 FROM hoatdong h 
+                 LEFT JOIN danhsachdangky dk ON dk.HoatDongId = h.Id AND dk.TrangThai = 1
+                 WHERE h.Id = ?
+                 GROUP BY h.Id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $activityId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $data = $result->fetch_assoc();
+        
+        if ($data) {
+            return $data['SoLuong'] - $data['registered'];
+        }
+        return 0;
+    }
+
+    public function getStatusText($status) {
+        switch ($status) {
+            case 0:
+                return 'Sắp diễn ra';
+            case 1:
+                return 'Đang diễn ra';
+            case 2:
+                return 'Đã kết thúc';
+            default:
+                return 'Không xác định';
+        }
+    }
+
+    public function getStatusClass($status) {
+        switch ($status) {
+            case 0:
+                return 'bg-blue-100 text-blue-800';
+            case 1:
+                return 'bg-green-100 text-green-800';
+            case 2:
+                return 'bg-gray-100 text-gray-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    }
 }

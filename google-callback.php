@@ -39,8 +39,8 @@ try {
             
             $_SESSION['user_id'] = $user['Id'];
             $_SESSION['username'] = $user['TenDangNhap'];
-            $_SESSION['role'] = $user['VaiTro'];
-            $_SESSION['avatar'] = $picture;
+            $_SESSION['role'] = $user['VaiTroId'];
+            $_SESSION['avatar'] = $user['anhdaidien'];
             
             header('Location: index.php');
             exit;

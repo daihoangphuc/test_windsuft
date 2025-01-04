@@ -45,7 +45,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
             ?>
         </div>
     <?php endif; ?>
-
+    
     <?php if (isset($_SESSION['flash_error'])): ?>
         <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
             <?php 
@@ -54,7 +54,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
             ?>
         </div>
     <?php endif; ?>
-
+    
     <!-- Thanh tìm kiếm -->
     <div class="mb-4">
         <form class="flex items-center">   
@@ -84,9 +84,8 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                     <th scope="col" class="px-6 py-3">Tên hoạt động</th>
                     <th scope="col" class="px-6 py-3">Thời gian</th>
                     <th scope="col" class="px-6 py-3">Địa điểm</th>
-                    <th scope="col" class="px-6 py-3">Số lượng</th>
-                    <th scope="col" class="px-6 py-3">Người tạo</th>
                     <th scope="col" class="px-6 py-3">Trạng thái</th>
+                    <th scope="col" class="px-6 py-3">Số lượng</th>
                     <th scope="col" class="px-6 py-3">Minh chứng</th>
                     <th scope="col" class="px-6 py-3">
                         <span class="sr-only">Thao tác</span>
@@ -94,55 +93,72 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($activities as $activity): ?>
+                <?php foreach ($activities as $item): 
+                    // Cập nhật trạng thái tự động
+                    $activity->updateStatus($item['Id']);
+                    $remainingSlots = $activity->getRemainingSlots($item['Id']);
+                    $registrationPercentage = $item['SoLuong'] > 0 ? 
+                        (($item['SoLuong'] - $remainingSlots) / $item['SoLuong']) * 100 : 0;
+                ?>
                 <tr class="bg-white border-b hover:bg-gray-50">
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                        <?php echo htmlspecialchars($activity['TenHoatDong']); ?>
-                    </th>
+                    <td class="px-6 py-4 font-medium text-gray-900">
+                        <?php echo htmlspecialchars($item['TenHoatDong']); ?>
+                    </td>
                     <td class="px-6 py-4">
                         <?php 
-                        echo date('d/m/Y H:i', strtotime($activity['NgayBatDau'])) . ' - ';
-                        echo date('d/m/Y H:i', strtotime($activity['NgayKetThuc']));
+                        echo date('d/m/Y H:i', strtotime($item['NgayBatDau'])) . ' - <br>' . 
+                             date('d/m/Y H:i', strtotime($item['NgayKetThuc'])); 
                         ?>
                     </td>
-                    <td class="px-6 py-4"><?php echo htmlspecialchars($activity['DiaDiem']); ?></td>
-                    <td class="px-6 py-4"><?php echo $activity['SoLuong']; ?></td>
-                    <td class="px-6 py-4"><?php echo htmlspecialchars($activity['NguoiTao']); ?></td>
                     <td class="px-6 py-4">
-                    <span class="px-2 py-1 text-xs font-semibold rounded 
-                        <?php 
-                            echo $activity['TrangThai'] === 0 ? 'bg-blue-100 text-blue-800' : 
-                                ($activity['TrangThai'] === 1 ? 'bg-green-100 text-green-800' : 
-                                'bg-gray-100 text-gray-800'); 
-                        ?>">
-                        <?php 
-                            echo $activity['TrangThai'] === 0 ? 'Sắp diễn ra' : 
-                                ($activity['TrangThai'] === 1 ? 'Đang diễn ra' : 
-                                'Đã kết thúc'); 
-                        ?>
-                    </span>
-                </td>
-
-                    <td class="px-6 py-4">
-                        <?php if (!empty($activity['DuongDanMinhChung'])): ?>
-                            <a href="<?php echo '../../' . $activity['DuongDanMinhChung']; ?>" target="_blank" 
-                               class="text-blue-600 hover:text-blue-900">
-                                <i class="fas fa-file-alt"></i> Xem
+                        <?php echo htmlspecialchars($item['DiaDiem']); ?>
+                        <?php if ($item['ToaDo']): ?>
+                            <a href="https://www.google.com/maps?q=<?php echo $item['ToaDo']; ?>" 
+                               target="_blank" 
+                               class="text-blue-600 hover:underline ml-2">
+                                <i class="fas fa-map-marker-alt"></i>
                             </a>
                         <?php endif; ?>
-                        <button onclick="openEvidenceModal(<?php echo $activity['Id']; ?>)" 
-                                class="text-blue-600 hover:text-blue-900 ml-2">
-                            <i class="fas fa-upload"></i> Cập nhật
-                        </button>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded text-xs font-medium <?php echo $activity->getStatusClass($item['TrangThai']); ?>">
+                            <?php echo $activity->getStatusText($item['TrangThai']); ?>
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="text-sm mb-1">
+                                <?php echo ($item['SoLuong'] - $remainingSlots) . '/' . $item['SoLuong']; ?>
+                            </span>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="h-2.5 rounded-full <?php echo $registrationPercentage >= 90 ? 'bg-red-600' : 'bg-blue-600'; ?>" 
+                                     style="width: <?php echo $registrationPercentage; ?>%">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <?php if ($item['DuongDanMinhChung']): ?>
+                            <a href="<?php echo htmlspecialchars($item['DuongDanMinhChung']); ?>" 
+                               target="_blank"
+                               class="text-blue-600 hover:underline">
+                                <i class="fas fa-file-alt"></i> Xem
+                            </a>
+                        <?php else: ?>
+                            <button onclick="openEvidenceModal(<?php echo $item['Id']; ?>)"
+                                    class="text-gray-600 hover:text-blue-600">
+                                <i class="fas fa-upload"></i> Tải lên
+                            </button>
+                        <?php endif; ?>
                     </td>
                     <td class="px-6 py-4 text-right space-x-2">
-                        <a href="manage_attendance.php?id=<?php echo $activity['Id']; ?>" class="font-medium text-blue-600 hover:underline">
+                        <a href="manage_attendance.php?id=<?php echo $item['Id']; ?>" class="font-medium text-blue-600 hover:underline">
                             <i class="fas fa-clipboard-check"></i> Điểm danh
                         </a>
-                        <button type="button" onclick="openEditModal(<?php echo $activity['Id']; ?>)" class="font-medium text-yellow-600 hover:underline mr-3">
+                        <button type="button" onclick="openEditModal(<?php echo $item['Id']; ?>)" class="font-medium text-yellow-600 hover:underline mr-3">
                             Sửa
                         </button>
-                        <button type="button" onclick="deleteActivity(<?php echo $activity['Id']; ?>)" class="font-medium text-red-600 hover:underline">
+                        <button type="button" onclick="deleteActivity(<?php echo $item['Id']; ?>)" class="font-medium text-red-600 hover:underline">
                             Xóa
                         </button>
                     </td>
@@ -360,7 +376,6 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                                 <option value="0">Sắp diễn ra</option>
                                 <option value="1">Đang diễn ra</option>
                                 <option value="2">Đã kết thúc</option>
-                                <option value="3">Đã hủy</option>
                             </select>
                         </div>
                     </div>

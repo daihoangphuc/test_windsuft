@@ -23,6 +23,20 @@ $stmt->bind_param("i", $userId);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
+// Thống kê hoạt động
+$statsQuery = $db->prepare("
+    SELECT 
+        (SELECT COUNT(*) 
+         FROM danhsachdangky 
+         WHERE NguoiDungId = ? AND TrangThai = 1) as TongDangKy,
+        (SELECT COUNT(*) 
+         FROM danhsachthamgia 
+         WHERE NguoiDungId = ? AND TrangThai = 1) as TongThamGia
+");
+$statsQuery->bind_param("ii", $userId, $userId);
+$statsQuery->execute();
+$stats = $statsQuery->get_result()->fetch_assoc();
+
 // Xử lý cập nhật thông tin
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_profile'])) {
@@ -151,10 +165,10 @@ $pageTitle = "Thông tin cá nhân";
 require_once 'layouts/header.php';
 ?>
 
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto py-8 px-4 lg:px-8">
     <!-- Flash Message -->
     <?php if (isset($_SESSION['flash_message']) || isset($_SESSION['flash_error'])): ?>
-    <div id="flashMessage" class="mb-4">
+    <div id="flashMessage" class="mb-4 px-4">
         <?php if (isset($_SESSION['flash_message'])): ?>
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
             <?php echo $_SESSION['flash_message']; ?>
@@ -171,14 +185,13 @@ require_once 'layouts/header.php';
     </div>
     <?php endif; ?>
 
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="md:flex">
+    <div class="bg-white rounded-lg overflow-hidden">
+        <div class="flex flex-col md:flex-row">
             <!-- Sidebar với ảnh đại diện -->
-            <div class="md:w-1/3 p-4 bg-gray-50">
+            <div class="w-full md:w-1/3 p-4 bg-gray-50 md:mt-[90px]">
                 <div class="text-center">
                     <img src="<?php echo str_replace('../', BASE_URL . '/', $_SESSION['avatar']); ?>" alt="user photo"
-                         alt="Avatar" 
-                         class="w-48 h-48 rounded-full mx-auto mb-4 object-cover border-4 border-blue-500">
+                         class="w-32 h-32 md:w-48 md:h-48 rounded-full mx-auto mb-4 object-cover border-4 border-blue-500">
                     
                     <form action="" method="POST" enctype="multipart/form-data" class="mb-4">
                         <label class="block mb-2 text-sm font-medium text-gray-900">
@@ -190,7 +203,7 @@ require_once 'layouts/header.php';
                             file:text-sm file:font-semibold
                             file:bg-blue-50 file:text-blue-700
                             hover:file:bg-blue-100">
-                        <button type="submit" class="mt-2 text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5">
+                        <button type="submit" class="mt-2 text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 w-full md:w-auto">
                             Cập nhật ảnh
                         </button>
                     </form>
@@ -198,7 +211,7 @@ require_once 'layouts/header.php';
             </div>
 
             <!-- Main content -->
-            <div class="md:w-2/3 p-6">
+            <div class="w-full md:w-2/3 p-4 md:p-6">
                 <h2 class="text-2xl font-bold mb-6">Thông tin cá nhân</h2>
                 
                 <!-- Tabs -->
@@ -214,15 +227,20 @@ require_once 'layouts/header.php';
                                 Đổi mật khẩu
                             </button>
                         </li>
+                        <li class="mr-2" role="presentation">
+                            <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="activities-tab" data-tabs-target="#activities" type="button" role="tab" aria-controls="activities" aria-selected="false">
+                                Hoạt động
+                            </button>
+                        </li>
                     </ul>
                 </div>
 
-                <!-- Tab contents -->
+                <!-- Tab Thông tin chung -->
                 <div id="profile" role="tabpanel" aria-labelledby="profile-tab">
                     <form action="" method="POST" class="space-y-4">
                         <input type="hidden" name="update_profile" value="1">
                         
-                        <div class="grid md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900">Mã sinh viên</label>
                                 <input type="text" name="ma_sinh_vien" value="<?php echo htmlspecialchars($user['MaSinhVien']); ?>" 
@@ -280,6 +298,7 @@ require_once 'layouts/header.php';
                     </form>
                 </div>
 
+                <!-- Tab Đổi mật khẩu -->
                 <div id="password" class="hidden" role="tabpanel" aria-labelledby="password-tab">
                     <form action="" method="POST" class="space-y-4">
                         <input type="hidden" name="change_password" value="1">
@@ -307,6 +326,74 @@ require_once 'layouts/header.php';
                         </button>
                     </form>
                 </div>
+
+                <!-- Tab Hoạt động -->
+                <div id="activities" class="hidden" role="tabpanel" aria-labelledby="activities-tab">
+                    <div class="bg-white p-4 md:p-6 rounded-lg">
+                        <h3 class="text-xl md:text-2xl font-bold mb-6 text-gray-800">Thống kê hoạt động</h3>
+                        <div class="w-full">
+                            <!-- Thông tin phụ -->
+                            <div class="mb-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                        <p class="text-sm text-gray-600">Tỷ lệ tham gia</p>
+                                        <p class="text-xl md:text-2xl font-bold text-blue-600">
+                                            <?php 
+                                            $ratio = $stats['TongDangKy'] > 0 
+                                                ? round(($stats['TongThamGia'] / $stats['TongDangKy']) * 100, 1) 
+                                                : 0; 
+                                            echo $ratio . '%';
+                                            ?>
+                                        </p>
+                                    </div>
+                                    <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                                        <p class="text-sm text-gray-600">Hoạt động tích cực</p>
+                                        <p class="text-xl md:text-2xl font-bold text-green-600">
+                                            <?php echo $stats['TongThamGia']; ?> lần
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Progress bars -->
+                            <div class="space-y-4">
+                                <div class="flex flex-col md:flex-row md:items-center">
+                                    <span class="text-sm font-medium text-gray-600 mb-2 md:mb-0 md:mr-2 md:w-32">Tổng đăng ký:</span>
+                                    <div class="relative w-full md:w-[300px] h-9 bg-blue-100 rounded-lg">
+                                        <?php 
+                                        $dangKyPercent = ($stats['TongDangKy'] / max($stats['TongDangKy'], $stats['TongThamGia'])) * 100;
+                                        $isFullDangKy = $dangKyPercent >= 100;
+                                        ?>
+                                        <div class="absolute top-0 h-full bg-blue-600 rounded-lg transition-all duration-1000" 
+                                             style="width: <?php echo $dangKyPercent; ?>%">
+                                        </div>
+                                        <div class="absolute inset-0 flex items-center justify-end pr-2">
+                                            <span class="text-sm font-semibold <?php echo $isFullDangKy ? 'text-white' : 'text-blue-600'; ?>">
+                                                <?php echo $stats['TongDangKy']; ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col md:flex-row md:items-center">
+                                    <span class="text-sm font-medium text-gray-600 mb-2 md:mb-0 md:mr-2 md:w-32">Tổng tham gia:</span>
+                                    <div class="relative w-full md:w-[300px] h-9 bg-green-100 rounded-lg">
+                                        <?php 
+                                        $thamGiaPercent = ($stats['TongThamGia'] / max($stats['TongDangKy'], $stats['TongThamGia'])) * 100;
+                                        $isFullThamGia = $thamGiaPercent >= 100;
+                                        ?>
+                                        <div class="absolute top-0 h-full bg-green-600 rounded-lg transition-all duration-1000" 
+                                             style="width: <?php echo $thamGiaPercent; ?>%">
+                                        </div>
+                                        <div class="absolute inset-0 flex items-center justify-end pr-2">
+                                            <span class="text-sm font-semibold <?php echo $isFullThamGia ? 'text-white' : 'text-green-600'; ?>">
+                                                <?php echo $stats['TongThamGia']; ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -324,6 +411,11 @@ const tabElements = [
         id: 'password-tab',
         triggerEl: document.querySelector('#password-tab'),
         targetEl: document.querySelector('#password')
+    },
+    {
+        id: 'activities-tab',
+        triggerEl: document.querySelector('#activities-tab'),
+        targetEl: document.querySelector('#activities')
     }
 ];
 
@@ -345,13 +437,25 @@ tabElements.forEach(tab => {
     });
 });
 
-// Auto hide flash messages
-setTimeout(() => {
-    const flashMessage = document.getElementById('flashMessage');
-    if (flashMessage) {
-        flashMessage.style.display = 'none';
-    }
-}, 5000);
+// Animation cho các thanh tiến trình
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('[role="tab"]');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            if (tab.id === 'activities-tab') {
+                // Reset và chạy animation khi tab được chọn
+                const bars = document.querySelectorAll('.bg-blue-600, .bg-green-600');
+                bars.forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 50);
+                });
+            }
+        });
+    });
+});
 </script>
 
 <?php require_once 'layouts/footer.php'; ?>

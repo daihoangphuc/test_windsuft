@@ -98,9 +98,27 @@ require_once '../layouts/header.php';
                     <h3 class="text-xl font-bold text-gray-900">
                         <?php echo htmlspecialchars($activity['TenHoatDong']); ?>
                     </h3>
-                    <span class="px-2 py-1 text-xs font-semibold rounded <?php echo $activity['TrangThai'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                        <?php echo $activity['TrangThai'] ? 'Đang mở' : 'Đã đóng'; ?>
-                    </span>
+                    <span class="px-2 py-1 text-xs font-semibold rounded 
+                    <?php 
+                        if ($activity['TrangThai'] == 0) {
+                            echo 'bg-blue-100 text-blue-800'; // Sắp diễn ra
+                        } elseif ($activity['TrangThai'] == 1) {
+                            echo 'bg-green-100 text-green-800'; // Đang diễn ra
+                        } else {
+                            echo 'bg-gray-100 text-gray-800'; // Đã kết thúc
+                        }
+                    ?>">
+                    <?php 
+                        if ($activity['TrangThai'] == 0) {
+                            echo 'Sắp diễn ra';
+                        } elseif ($activity['TrangThai'] == 1) {
+                            echo 'Đang diễn ra';
+                        } else {
+                            echo 'Đã kết thúc';
+                        }
+                    ?>
+                </span>
+
                 </div>
                 
                 <div class="space-y-3 text-gray-600 text-sm">

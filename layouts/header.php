@@ -13,13 +13,118 @@ $auth = new Auth();
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+    <style>
+        .flash-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            padding: 16px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        .flash-notification.success {
+            border-left: 4px solid #10B981;
+        }
+        .flash-notification.error {
+            border-left: 4px solid #EF4444;
+        }
+        .flash-notification.info {
+            border-left: 4px solid #3B82F6;
+        }
+        .flash-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: #3B82F6;
+            width: 100%;
+            transform-origin: left;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
 </head>
 <body class="bg-[#f8f9fa]">
-    <nav class="bg-white shadow-md">
+    <!-- Flash Notification Container -->
+    <div id="flashNotification" class="flash-notification">
+        <div class="flex justify-between items-start">
+            <div id="flashMessage" class="flex-1 pr-4"></div>
+            <button onclick="closeFlash()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="flash-progress" id="flashProgress"></div>
+    </div>
+
+    <script>
+        let flashTimeout;
+        let progressAnimation;
+
+        function showFlash(message, type = 'info') {
+            const notification = document.getElementById('flashNotification');
+            const messageEl = document.getElementById('flashMessage');
+            const progress = document.getElementById('flashProgress');
+            
+            // Reset any existing timeouts and animations
+            if (flashTimeout) clearTimeout(flashTimeout);
+            if (progressAnimation) progressAnimation.cancel();
+
+            // Set message and type
+            messageEl.textContent = message;
+            notification.className = 'flash-notification ' + type;
+            notification.style.display = 'block';
+
+            // Animate progress bar
+            progressAnimation = progress.animate(
+                [
+                    { transform: 'scaleX(1)' },
+                    { transform: 'scaleX(0)' }
+                ],
+                {
+                    duration: 3000,
+                    easing: 'linear',
+                    fill: 'forwards'
+                }
+            );
+
+            // Auto close after 3 seconds
+            flashTimeout = setTimeout(() => closeFlash(), 3000);
+        }
+
+        function closeFlash() {
+            const notification = document.getElementById('flashNotification');
+            notification.style.animation = 'slideOut 0.3s ease-out forwards';
+            setTimeout(() => {
+                notification.style.display = 'none';
+                notification.style.animation = '';
+            }, 300);
+        }
+
+        // Show flash message if exists
+        <?php if (isset($_SESSION['flash_message'])): ?>
+            showFlash(<?php echo json_encode($_SESSION['flash_message']); ?>, <?php echo isset($_SESSION['flash_type']) ? json_encode($_SESSION['flash_type']) : "'info'"; ?>);
+            <?php unset($_SESSION['flash_message']); unset($_SESSION['flash_type']); ?>
+        <?php endif; ?>
+    </script>
+
+    <nav class="bg-white shadow-sm">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
             <!-- Logo -->
             <a href="<?php echo BASE_URL; ?>/" class="flex items-center space-x-3 rtl:space-x-reverse">
-                <span class="self-center text-2xl font-semibold whitespace-nowrap text-[#4a90e2]">CLB HSTV</span>
+                <img src="<?php echo BASE_URL; ?>/assets/logo/logo-clb.png" class="h-8 mr-3" alt="CLB HSTV Logo">
             </a>
 
             <!-- Mobile menu button -->
@@ -33,33 +138,72 @@ $auth = new Auth();
             </button>
 
             <!-- Navigation items -->
-            <div class="hidden w-full md:flex md:w-auto md:order-1" id="navbar-default">
-                <ul class="flex flex-col md:flex-row md:space-x-8 mt-4 md:mt-0 md:text-sm md:font-medium">
-                    <li>
-                        <a href="<?php echo BASE_URL; ?>/" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Trang chủ</a>
-                    </li>
-                    <?php if (isset($_SESSION['user_id'])): ?>
+            <div class="hidden w-full md:block md:w-auto" id="navbar-default">
+                <div class="flex flex-col md:flex-row items-center">
+                    <ul class="flex flex-col md:flex-row md:space-x-8 mt-4 md:mt-0 md:text-sm md:font-medium w-full">
                         <li>
-                            <a href="<?php echo BASE_URL; ?>/activities" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Hoạt động</a>
+                            <a href="<?php echo BASE_URL; ?>/" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Trang chủ</a>
                         </li>
                         <li>
-                            <a href="<?php echo BASE_URL; ?>/activities/my_activities.php" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Hoạt động của tôi</a>
+                            <a href="<?php echo BASE_URL; ?>/guide.php" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Hướng dẫn sử dụng</a>
                         </li>
                         <li>
-                            <a href="<?php echo BASE_URL; ?>/tasks/my_tasks.php" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Nhiệm vụ</a>
+                            <a href="https://zalo.me/g/dqqnrd829" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Nhóm hỗ trợ</a>
                         </li>
+                        <?php if (isset($_SESSION['user_id'])): ?>
+                            <li>
+                                <a href="<?php echo BASE_URL; ?>/activities" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Hoạt động</a>
+                            </li>
+                            <li>
+                                <a href="<?php echo BASE_URL; ?>/activities/my_activities.php" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Hoạt động của tôi</a>
+                            </li>
+                            <li>
+                                <a href="<?php echo BASE_URL; ?>/tasks/my_tasks.php" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Nhiệm vụ</a>
+                            </li>
+                        <?php endif; ?>
+                        
+                        <!-- Auth buttons in mobile menu -->
+                        <?php if (!isset($_SESSION['user_id'])): ?>
+                            <li class="md:hidden">
+                                <a href="<?php echo base_url('/login.php'); ?>" 
+                                   class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md whitespace-nowrap">
+                                    Đăng nhập
+                                </a>
+                            </li>
+                            <li class="md:hidden">
+                                <a href="<?php echo base_url('/register.php'); ?>" 
+                                   class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md whitespace-nowrap">
+                                    Đăng ký
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                    
+                    <!-- Auth buttons - Only visible on desktop -->
+                    <?php if (!isset($_SESSION['user_id'])): ?>
+                        <div class="hidden md:flex items-center space-x-4 ml-8">
+                        <a href="<?php echo base_url('/login.php'); ?>" 
+   class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none whitespace-nowrap">
+    Đăng nhập
+</a>
+<a href="<?php echo base_url('/register.php'); ?>" 
+   class="text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center whitespace-nowrap">
+    Đăng ký
+</a>
+
+                        </div>
                     <?php endif; ?>
-                </ul>
+                </div>
             </div>
 
-            <!-- Auth buttons -->
+            <!-- Auth section for desktop (when logged in) -->
             <?php if (isset($_SESSION['user_id'])): ?>
-                <div class="flex items-center md:order-2">
+                <div class="hidden md:flex items-center md:order-2">
                     <div class="relative ml-3" x-data="{ open: false }">
                         <button @click="open = !open" 
                                 class="flex text-sm border-2 border-[#4a90e2] rounded-full focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition duration-300">
                             <img class="h-8 w-8 rounded-full object-cover" 
-                                 src="<?php echo str_replace('../', BASE_URL . '/', $_SESSION['avatar']); ?>" alt="user photo"" 
+                                 src="<?php echo str_replace('../', BASE_URL . '/', $_SESSION['avatar']); ?>" 
                                  alt="Avatar">
                         </button>
                         <div x-show="open" 
@@ -82,17 +226,6 @@ $auth = new Auth();
                             </a>
                         </div>
                     </div>
-                </div>
-            <?php else: ?>
-                <div class="flex items-center space-x-4 md:order-2">
-                    <a href="<?php echo base_url('/login.php'); ?>" 
-                       class="text-gray-800 hover:text-[#4a90e2] px-3 py-2 rounded-md text-sm font-medium">
-                        Đăng nhập
-                    </a>
-                    <a href="<?php echo base_url('/register.php'); ?>" 
-                       class="text-gray-800 hover:text-[#4a90e2] px-3 py-2 rounded-md text-sm font-medium">
-                        Đăng ký
-                    </a>
                 </div>
             <?php endif; ?>
         </div>
