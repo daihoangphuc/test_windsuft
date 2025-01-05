@@ -7,6 +7,88 @@ $auth->requireLogin();
 
 $db = Database::getInstance()->getConnection();
 
+// Function to calculate distance between two coordinates using Haversine formula
+function calculateDistance($lat1, $lon1, $lat2, $lon2) {
+    $earthRadius = 6371000; // Earth's radius in meters
+    $lat1 = deg2rad($lat1);
+    $lon1 = deg2rad($lon1);
+    $lat2 = deg2rad($lat2);
+    $lon2 = deg2rad($lon2);
+    
+    $dlat = $lat2 - $lat1;
+    $dlon = $lon2 - $lon1;
+    
+    $a = sin($dlat/2) * sin($dlat/2) + cos($lat1) * cos($lat2) * sin($dlon/2) * sin($dlon/2);
+    $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+    
+    return $earthRadius * $c;
+}
+
+// Handle attendance submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'attendance') {
+    header('Content-Type: application/json');
+    
+    $hoatDongId = $_POST['hoatDongId'] ?? 0;
+    $userLat = $_POST['latitude'] ?? 0;
+    $userLng = $_POST['longitude'] ?? 0;
+    
+    // Get activity details
+    $stmt = $db->prepare("SELECT ToaDo, NgayKetThuc FROM hoatdong WHERE Id = ?");
+    $stmt->bind_param("i", $hoatDongId);
+    $stmt->execute();
+    $activity = $stmt->get_result()->fetch_assoc();
+    
+    if (!$activity) {
+        echo json_encode(['success' => false, 'message' => 'Hoạt động không tồn tại']);
+        exit;
+    }
+    
+    // Check if within time window (15 minutes before end time)
+    $endTime = new DateTime($activity['NgayKetThuc']);
+    $currentTime = new DateTime();
+    $timeWindow = clone $endTime;
+    $timeWindow->modify('-15 minutes');
+    
+    if ($currentTime > $endTime || $currentTime < $timeWindow) {
+        echo json_encode(['success' => false, 'message' => 'Ngoài thời gian điểm danh']);
+        exit;
+    }
+    
+    // Calculate distance
+    $activityCoords = explode(',', $activity['ToaDo']);
+    if (count($activityCoords) !== 2) {
+        echo json_encode(['success' => false, 'message' => 'Tọa độ hoạt động không hợp lệ']);
+        exit;
+    }
+    
+    $distance = calculateDistance($userLat, $userLng, trim($activityCoords[0]), trim($activityCoords[1]));
+    
+    if ($distance > 200) { // 200 meters
+        echo json_encode(['success' => false, 'message' => 'Bạn đang ở quá xa địa điểm hoạt động']);
+        exit;
+    }
+    
+    // Check if already attended
+    $stmt = $db->prepare("SELECT Id FROM danhsachthamgia WHERE NguoiDungId = ? AND HoatDongId = ?");
+    $stmt->bind_param("ii", $_SESSION['user_id'], $hoatDongId);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows > 0) {
+        echo json_encode(['success' => false, 'message' => 'Bạn đã điểm danh hoạt động này rồi']);
+        exit;
+    }
+    
+    // Record attendance
+    $stmt = $db->prepare("INSERT INTO danhsachthamgia (NguoiDungId, HoatDongId, TrangThai) VALUES (?, ?, 1)");
+    $stmt->bind_param("ii", $_SESSION['user_id'], $hoatDongId);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Điểm danh thành công']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Lỗi khi điểm danh']);
+    }
+    exit;
+}
+
 // Get user's activities
 $query = "
     SELECT 
@@ -100,36 +182,39 @@ require_once '../layouts/header.php';
                         </td>
                         <td class="px-6 py-4">
                             <?php 
-                            echo date('d/m/Y H:i', strtotime($activity['NgayBatDau'])) . ' - ' . 
-                                 date('d/m/Y H:i', strtotime($activity['NgayKetThuc'])); 
+                            $startDate = new DateTime($activity['NgayBatDau']);
+                            $endDate = new DateTime($activity['NgayKetThuc']);
+                            echo $startDate->format('d/m/Y H:i') . ' - ' . $endDate->format('d/m/Y H:i'); 
                             ?>
                         </td>
                         <td class="px-6 py-4">
                             <?php echo htmlspecialchars($activity['DiaDiem']); ?>
                         </td>
                         <td class="px-6 py-4">
-                            <?php echo date('d/m/Y H:i', strtotime($activity['ThoiGianDangKy'])); ?>
+                            <?php 
+                            $registerDate = new DateTime($activity['ThoiGianDangKy']);
+                            echo $registerDate->format('d/m/Y H:i'); 
+                            ?>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="<?php echo $activity['TrangThai'] === 'Đã tham gia' ? 'text-green-600' : ($activity['TrangThai'] === 'Vắng mặt' ? 'text-red-600' : 'text-blue-600'); ?>">
+                                <?php echo $activity['TrangThai']; ?>
+                            </span>
                         </td>
                         <td class="px-6 py-4">
                             <?php
-                            $status_class = '';
-                            switch ($activity['TrangThai']) {
-                                case 'Đã tham gia':
-                                    $status_class = 'text-green-500';
-                                    break;
-                                case 'Vắng mặt':
-                                    $status_class = 'text-red-500';
-                                    break;
-                                default:
-                                    $status_class = 'text-blue-500';
-                            }
+                            $now = new DateTime();
+                            $endTime = new DateTime($activity['NgayKetThuc']);
+                            $timeWindow = clone $endTime;
+                            $timeWindow->modify('-15 minutes');
+                            
+                            if ($activity['TrangThai'] === 'Đã đăng ký' && $now >= $timeWindow && $now <= $endTime):
                             ?>
-                            <span class="<?php echo $status_class; ?>"><?php echo $activity['TrangThai']; ?></span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <a href="view_activity.php?id=<?php echo $activity['Id']; ?>" class="font-medium text-blue-600 hover:underline">
-                                Xem chi tiết
-                            </a>
+                            <button onclick="submitAttendance(<?php echo $activity['Id']; ?>)" 
+                                    class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-4 py-2">
+                                Điểm danh
+                            </button>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -138,6 +223,56 @@ require_once '../layouts/header.php';
     </div>
 </div>
 
-<?php
-require_once '../layouts/footer.php';
-?>
+<script>
+function submitAttendance(activityId) {
+    if (!navigator.geolocation) {
+        alert('Trình duyệt của bạn không hỗ trợ định vị');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const data = new FormData();
+            data.append('action', 'attendance');
+            data.append('hoatDongId', activityId);
+            data.append('latitude', position.coords.latitude);
+            data.append('longitude', position.coords.longitude);
+
+            fetch(window.location.href, {
+                method: 'POST',
+                body: data
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.success) {
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi điểm danh');
+            });
+        },
+        function(error) {
+            let message = 'Lỗi khi lấy vị trí: ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message += 'Bạn đã từ chối cho phép truy cập vị trí';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message += 'Không thể lấy được vị trí';
+                    break;
+                case error.TIMEOUT:
+                    message += 'Hết thời gian chờ lấy vị trí';
+                    break;
+                default:
+                    message += 'Lỗi không xác định';
+            }
+            alert(message);
+        }
+    );
+}
+</script>
+
+<?php require_once '../layouts/footer.php'; ?>

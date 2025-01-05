@@ -44,7 +44,7 @@ class Mailer {
     
     public function sendPasswordReset($email, $token) {
         try {
-            $reset_link = "http://{$_SERVER['HTTP_HOST']}/test_windsuft/reset-password.php?token=" . $token;
+            $reset_link = "http://{$_SERVER['HTTP_HOST']}/manage-htsv/reset-password.php?token=" . $token;
             
             $this->mail->addAddress($email);
             $this->mail->Subject = 'Khôi phục mật khẩu - CLB HSTV';

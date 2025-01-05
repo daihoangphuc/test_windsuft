@@ -64,7 +64,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
             <?php foreach ($news_list as $item): ?>
                 <div class="bg-white shadow rounded-lg p-4">
                     <h3 class="text-lg font-bold mb-2">
-                        <a href="/test_windsuft/news/detail.php?id=<?php echo $item['Id']; ?>" 
+                        <a href="/manage-htsv/news/detail.php?id=<?php echo $item['Id']; ?>" 
                            class="text-gray-600 hover:text-blue-800">
                             <?php echo htmlspecialchars($item['TieuDe']); ?>
                         </a>
@@ -73,7 +73,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                     <p class="text-gray-500 mb-2"><?php echo date('d/m/Y H:i', strtotime($item['NgayTao'])); ?></p>
                     <div class="text-gray-500 mb-4">
                         <?php if ($item['FileDinhKem']): ?>
-                            <a href="/test_windsuft/<?php echo htmlspecialchars($item['FileDinhKem']); ?>" 
+                            <a href="/manage-htsv/<?php echo htmlspecialchars($item['FileDinhKem']); ?>" 
                                class="font-medium text-blue-600 hover:underline" target="_blank">
                                 Xem file đính kèm
                             </a>
@@ -255,7 +255,7 @@ function openEditModal(id) {
                     currentFileDiv.innerHTML = `
                         <div class="flex items-center space-x-2">
                             <span>File hiện tại:</span>
-                            <a href="/test_windsuft/${news.FileDinhKem}" 
+                            <a href="/manage-htsv/${news.FileDinhKem}" 
                                class="text-blue-600 hover:underline" 
                                target="_blank">
                                 ${news.FileDinhKem.split('/').pop()}
@@ -265,7 +265,7 @@ function openEditModal(id) {
                     // Hiển thị preview nếu là ảnh
                     if (news.FileDinhKem.match(/\.(jpg|jpeg|png|gif)$/i)) {
                         const previewImage = document.getElementById('previewImage');
-                        previewImage.src = `/test_windsuft/${news.FileDinhKem}`;
+                        previewImage.src = `/manage-htsv/${news.FileDinhKem}`;
                         document.querySelector('.preview-container').classList.remove('hidden');
                     }
                 } else {

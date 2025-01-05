@@ -29,7 +29,7 @@ $auth->requireAdmin();
                 const href = item.getAttribute('href');
                 
                 // Kiểm tra chính xác cho Dashboard
-                if (href === '/test_windsuft/admin') {
+                if (href === '/manage-htsv/admin') {
                     if (currentPath === href || currentPath === href + '/') {
                         item.classList.add('bg-gray-100');
                         item.classList.add('text-blue-600');
@@ -55,7 +55,7 @@ $auth->requireAdmin();
                             <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
                         </svg>
                     </button>
-                    <a href="/test_windsuft/admin" class="flex ml-2 md:mr-24">
+                    <a href="/manage-htsv/admin" class="flex ml-2 md:mr-24">
                         <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">Admin Panel</span>
                     </a>
                 </div>
@@ -78,10 +78,10 @@ $auth->requireAdmin();
                             </div>
                             <ul class="py-1" role="none">
                                 <li>
-                                    <a href="/test_windsuft/profile.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Hồ sơ</a>
+                                    <a href="/manage-htsv/profile.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Hồ sơ</a>
                                 </li>
                                 <li>
-                                    <a href="/test_windsuft/logout.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Đăng xuất</a>
+                                    <a href="/manage-htsv/logout.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Đăng xuất</a>
                                 </li>
                             </ul>
                         </div>
@@ -95,7 +95,7 @@ $auth->requireAdmin();
         <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
             <ul class="space-y-2 font-medium">
                 <li>
-                    <a href="/test_windsuft/admin" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                    <a href="/manage-htsv/admin" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                         <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 21">
                             <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z"/>
                             <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z"/>
@@ -104,7 +104,7 @@ $auth->requireAdmin();
                     </a>
                 </li>
                 <li>
-                    <a href="/test_windsuft/admin/users" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                    <a href="/manage-htsv/admin/users" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                         <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
                             <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z"/>
                         </svg>
@@ -112,7 +112,7 @@ $auth->requireAdmin();
                     </a>
                 </li>
                 <li>
-                    <a href="/test_windsuft/admin/activities" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                    <a href="/manage-htsv/admin/activities" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                         <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M5 5V.13a2.96 2.96 0 0 0-1.293.749L.879 3.707A2.96 2.96 0 0 0 .13 5H5Z"/>
                             <path d="M6.737 11.061a2.961 2.961 0 0 1 .81-1.515l6.117-6.116A4.839 4.839 0 0 1 16 2.141V2a1.97 1.97 0 0 0-1.933-2H7v5a2 2 0 0 1-2 2H0v11a1.969 1.969 0 0 0 1.933 2h12.134A1.97 1.97 0 0 0 16 18v-3.093l-1.546 1.546c-.413.413-.94.695-1.513.81l-3.4.679a2.947 2.947 0 0 1-1.85-.227 2.96 2.96 0 0 1-1.635-3.257l.681-3.397Z"/>
@@ -122,7 +122,7 @@ $auth->requireAdmin();
                     </a>
                 </li>
                 <li>
-                    <a href="/test_windsuft/admin/tasks" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                    <a href="/manage-htsv/admin/tasks" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                         <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M18 2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2ZM2 18V7h16v11H2Z"/>
                             <path d="M8 9h8a1 1 0 0 0 0-2H8a1 1 0 0 0 0 2Zm0 4h8a1 1 0 0 0 0-2H8a1 1 0 0 0 0 2Z"/>
@@ -131,7 +131,7 @@ $auth->requireAdmin();
                     </a>
                 </li>
                 <li>
-                    <a href="/test_windsuft/admin/documents" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                    <a href="/manage-htsv/admin/documents" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                         <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M7 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H7Zm0 2h10v14H7V5Zm-4 2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h1V7H3Z"/>
                         </svg>
@@ -139,7 +139,7 @@ $auth->requireAdmin();
                     </a>
                 </li>
                 <li>
-                    <a href="/test_windsuft/admin/news" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                    <a href="/manage-htsv/admin/news" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                         <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M19 4h-1a1 1 0 1 0 0 2v11a1 1 0 0 1-2 0V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V5a1 1 0 0 0-1-1ZM3 4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4Zm9 13H4a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-3H4a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-3H4a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Z"/>
                         </svg>
@@ -147,7 +147,7 @@ $auth->requireAdmin();
                     </a>
                 </li>
                 <li>
-                    <a href="/test_windsuft/admin/finance" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                    <a href="/manage-htsv/admin/finance" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                         <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm0 17a7.5 7.5 0 1 1 7.5-7.5 7.509 7.509 0 0 1-7.5 7.5Zm2.5-10.5h-5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1Zm-1 5h-3v-3h3v3Z"/>
                         </svg>
@@ -155,7 +155,7 @@ $auth->requireAdmin();
                     </a>
                 </li>
                 <li>
-                    <a href="/test_windsuft/admin/reports" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                    <a href="/manage-htsv/admin/reports" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                         <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"/>
                         </path>
@@ -164,25 +164,25 @@ $auth->requireAdmin();
                 </a>
             </li>
             <li>
-                <a href="/test_windsuft/admin/positions" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                <a href="/manage-htsv/admin/positions" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                     <i class="fas fa-user-tag w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
                     <span class="ml-3">Chức vụ</span>
                 </a>
             </li>
             <li>
-    <a href="/test_windsuft/admin/faculty" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+    <a href="/manage-htsv/admin/faculty" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
         <i class="fas fa-university w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
         <span class="ml-3">Khoa/Trường</span>
     </a>
 </li>
 <li>
-    <a href="/test_windsuft/admin/class" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+    <a href="/manage-htsv/admin/class" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
         <i class="fas fa-graduation-cap w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
         <span class="ml-3">Lớp học</span>
     </a>
 </li>
             <li>
-                <a href="/test_windsuft/logout.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                <a href="/manage-htsv/logout.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
                     <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"/>
                     </path>

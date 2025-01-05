@@ -12,7 +12,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 // Check if user is logged in and is admin
 session_start();
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
-    header('Location: /test_windsuft/login.php');
+    header('Location: /manage-htsv/login.php');
     exit();
 }
 

@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 if ($stmt->execute()) {
                     // Send reset email
-                    $reset_link = "http://{$_SERVER['HTTP_HOST']}/test_windsuft/reset-password.php?token=" . $token;
+                    $reset_link = "http://{$_SERVER['HTTP_HOST']}/manage-htsv/reset-password.php?token=" . $token;
                     $mailer = Mailer::getInstance();
                     if ($mailer->sendPasswordReset($email, $token)) {
                         // Log activity

@@ -168,7 +168,7 @@ require_once __DIR__ . '/layouts/header.php';
       <div class="mx-auto grid max-w-7xl grid-cols-1 gap-x-8 gap-y-16 border-t border-[#e3f2fd] pt-10 mt-8 sm:mt-16 sm:pt-16 lg:grid-cols-3">
         <?php foreach ($news as $item): ?>
             <div class="max-w-sm bg-white border border-[#e3f2fd] rounded-lg shadow-md hover:shadow-lg transition duration-300">
-                <a href="/test_windsuft/news/detail.php?id=<?php echo $item['Id']; ?>">
+                <a href="/manage-htsv/news/detail.php?id=<?php echo $item['Id']; ?>">
                     <img class="rounded-t-lg w-full h-48 object-cover" src="<?php echo str_replace('../', BASE_URL . '/', $item['FileDinhKem']); ?>" alt="<?php echo htmlspecialchars($item['TieuDe']); ?>" />
                 </a>
                 <div class="p-5">
@@ -180,7 +180,7 @@ require_once __DIR__ . '/layouts/header.php';
                         <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 hover:text-[#4a90e2] transition duration-300"><?php echo htmlspecialchars($item['TieuDe']); ?></h5>
                     </a>
                     <p class="mb-3 text-sm text-gray-600"><?php echo htmlspecialchars(substr($item['NoiDung'], 0, 150)) . '...'; ?></p>
-                    <a href="/test_windsuft/news/detail.php?id=<?php echo $item['Id']; ?>" 
+                    <a href="/manage-htsv/news/detail.php?id=<?php echo $item['Id']; ?>" 
                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#4a90e2] rounded-lg hover:bg-[#2d5a8e] focus:ring-4 focus:ring-[#e3f2fd] transition duration-300">
                         Đọc thêm
                         <i class="fas fa-arrow-right ml-2"></i>
