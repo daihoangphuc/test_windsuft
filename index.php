@@ -38,10 +38,10 @@ require_once __DIR__ . '/layouts/header.php';
     });
 </script>
 <!-- Marquee cho hoạt động và tin tức -->
-<div class="bg-[#4a90e2] text-white py-2">
+<div class="bg-blue-100 text-black py-2" style="margin-top: -30px">
     <div class="flex items-center">
         <div class="flex-shrink-0 px-4 py-1 bg-[#2563eb] rounded-r-full">
-            <span class="font-semibold">Thông báo</span>
+            <span class="font-semibold text-white">Thông báo</span>
         </div>
         <div class="flex-1 overflow-hidden">
             <div class="marquee-container">
