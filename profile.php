@@ -185,12 +185,12 @@ require_once 'layouts/header.php';
     </div>
     <?php endif; ?>
 
-    <div class="bg-white rounded-lg overflow-hidden">
+    <div class="bg-white rounded-lg overflow-hidden"  style="margin-top: -50px">
         <div class="flex flex-col md:flex-row">
             <!-- Sidebar với ảnh đại diện -->
             <div class="w-full md:w-1/3 p-4 bg-gray-50 md:mt-[90px]">
                 <div class="text-center">
-                    <img src="<?php echo str_replace('../', BASE_URL . '/', $_SESSION['avatar']); ?>" alt="user photo"
+                    <img src="<?php echo str_replace('../', BASE_URL . '/', $user['anhdaidien']); ?>" alt="user photo"
                          class="w-32 h-32 md:w-48 md:h-48 rounded-full mx-auto mb-4 object-cover border-4 border-blue-500">
                     
                     <form action="" method="POST" enctype="multipart/form-data" class="mb-4">
@@ -243,7 +243,7 @@ require_once 'layouts/header.php';
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900">Mã sinh viên</label>
-                                <input type="text" name="ma_sinh_vien" value="<?php echo htmlspecialchars($user['MaSinhVien']); ?>" 
+                                <input type="text" readonly name="ma_sinh_vien" value="<?php echo htmlspecialchars($user['MaSinhVien']); ?>" 
                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             </div>
                             

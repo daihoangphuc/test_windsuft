@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/classes/News.php';
 $id = $_GET['id'] ?? '';
 
 if (!$id) {
-    header('Location: /test_windsuft/news/');
+    header('Location: /manage-htsv/news/');
     exit();
 }
 
@@ -14,7 +14,7 @@ $news = new News();
 $newsData = $news->get($id);
 
 if (!$newsData) {
-    header('Location: /test_windsuft/news/');
+    header('Location: /manage-htsv/news/');
     exit();
 }
 
@@ -33,7 +33,7 @@ include '../layouts/header.php';
             <nav class="flex mb-4" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-3">
                     <li class="inline-flex items-center">
-                        <a href="/test_windsuft/" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                        <a href="/manage-htsv/" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
                             <svg class="w-3 h-3 mr-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
                             </svg>
@@ -45,7 +45,7 @@ include '../layouts/header.php';
                             <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
                             </svg>
-                            <a href="/test_windsuft/news/" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Tin tức</a>
+                            <a href="/manage-htsv/news/" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Tin tức</a>
                         </div>
                     </li>
                 </ol>
@@ -53,7 +53,7 @@ include '../layouts/header.php';
 
             <article class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <?php if ($newsData['FileDinhKem']): ?>
-                <img src="/test_windsuft/<?php echo htmlspecialchars($newsData['FileDinhKem']); ?>" 
+                <img src="/manage-htsv/<?php echo htmlspecialchars($newsData['FileDinhKem']); ?>" 
                      alt="<?php echo htmlspecialchars($newsData['TieuDe']); ?>" 
                      class="w-full h-64 object-cover">
                 <?php endif; ?>
@@ -78,7 +78,7 @@ include '../layouts/header.php';
 
                     <?php if ($newsData['FileDinhKem']): ?>
                     <div class="mt-6">
-                        <a href="/test_windsuft/<?php echo htmlspecialchars($newsData['FileDinhKem']); ?>" 
+                        <a href="/manage-htsv/<?php echo htmlspecialchars($newsData['FileDinhKem']); ?>" 
                            class="inline-flex items-center text-blue-600 hover:underline" 
                            target="_blank">
                             <i class="fas fa-paperclip mr-1"></i>
@@ -99,7 +99,7 @@ include '../layouts/header.php';
                         <?php foreach ($relatedNews as $item): ?>
                             <div class="group">
                                 <?php if ($item['FileDinhKem']): ?>
-                                    <img src="/test_windsuft/<?php echo htmlspecialchars($item['FileDinhKem']); ?>" 
+                                    <img src="/manage-htsv/<?php echo htmlspecialchars($item['FileDinhKem']); ?>" 
                                          alt="<?php echo htmlspecialchars($item['TieuDe']); ?>"
                                          class="w-full h-40 object-cover rounded-lg mb-2">
                                 <?php endif; ?>

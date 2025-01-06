@@ -19,7 +19,7 @@ $total_pages = ceil($total_records / $limit);
 $pageTitle = 'Quản lý hoạt động';
 require_once __DIR__ . '/../../layouts/admin_header.php';
 ?>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet");
 
 <div class="p-4">
     <div class="flex justify-between items-center mb-4">
@@ -430,6 +430,97 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
 </div>
 
 <script>
+// Biến để kiểm tra form đang submit
+let isSubmitting = false;
+
+// Xử lý form thêm hoạt động
+document.getElementById('addForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Kiểm tra nếu đang submit thì không làm gì
+    if (isSubmitting) return;
+    
+    // Đánh dấu đang trong quá trình submit
+    isSubmitting = true;
+    
+    const formData = new FormData(this);
+    
+    // Disable nút submit
+    const submitButton = this.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    
+    // Hiển thị loading indicator
+    document.getElementById('loadingIndicator').style.display = 'block';
+    
+    fetch('add_activity.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Ẩn loading indicator
+        document.getElementById('loadingIndicator').style.display = 'none';
+        
+        if (data.success) {
+            closeAddModal();
+            location.reload();
+        } else {
+            alert(data.message || 'Có lỗi xảy ra');
+        }
+    })
+    .catch(error => {
+        // Ẩn loading indicator
+        document.getElementById('loadingIndicator').style.display = 'none';
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi xử lý yêu cầu');
+    })
+    .finally(() => {
+        // Kết thúc quá trình submit
+        isSubmitting = false;
+        submitButton.disabled = false;
+    });
+});
+
+// Xử lý form chỉnh sửa hoạt động
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Kiểm tra nếu đang submit thì không làm gì
+    if (isSubmitting) return;
+    
+    // Đánh dấu đang trong quá trình submit
+    isSubmitting = true;
+    
+    const formData = new FormData(this);
+    const id = document.getElementById('editId').value;
+    
+    // Disable nút submit
+    const submitButton = this.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    
+    fetch('edit_activity.php?id=' + id, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Có lỗi xảy ra');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra');
+    })
+    .finally(() => {
+        // Kết thúc quá trình submit
+        isSubmitting = false;
+        submitButton.disabled = false;
+    });
+});
+
 function deleteActivity(id) {
     if (confirm('Bạn có chắc chắn muốn xóa hoạt động này?')) {
         fetch('delete_activity.php?id=' + id, {
@@ -508,52 +599,6 @@ function getCurrentLocation(type = 'add') {
     }
 }
 
-// Xử lý form thêm hoạt động
-document.getElementById('addForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    
-    fetch('add_activity.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert(data.message || 'Có lỗi xảy ra');
-        }
-    })
-    .catch(error => {
-        alert('Có lỗi xảy ra');
-    });
-});
-
-// Xử lý form chỉnh sửa hoạt động
-document.getElementById('editForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const id = document.getElementById('editId').value;
-    
-    fetch('edit_activity.php?id=' + id, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert(data.message || 'Có lỗi xảy ra');
-        }
-    })
-    .catch(error => {
-        alert('Có lỗi xảy ra');
-    });
-});
-
-// Thêm các hàm xử lý modal minh chứng
 function openEvidenceModal(activityId) {
     document.getElementById('evidenceActivityId').value = activityId;
     document.getElementById('evidenceModal').classList.remove('hidden');
@@ -590,4 +635,13 @@ document.getElementById('evidenceForm').addEventListener('submit', function(e) {
 });
 </script>
 
-<?php require_once __DIR__ . '/../../layouts/admin_footer.php'; ?>
+<!-- Loading Indicator -->
+<div id="loadingIndicator" class="fixed top-0 left-0 right-0 bottom-0 w-full h-screen z-50 overflow-hidden bg-gray-700 opacity-75 hidden">
+    <div class="flex flex-col items-center justify-center h-full">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+        <h2 class="text-center text-white text-xl font-semibold">Đang xử lý...</h2>
+        <p class="w-2/3 text-center text-white">Vui lòng đợi trong khi hệ thống gửi thông báo đến các thành viên</p>
+    </div>
+</div>
+</body>
+</html>

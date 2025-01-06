@@ -84,7 +84,7 @@ try {
     $query = "INSERT INTO tailieu (TenTaiLieu, MoTa, DuongDan, LoaiTaiLieu, NguoiTaoId) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
     $nguoiTaoId = $_SESSION['user_id'];
-    $fileUrl = '/test_windsuft/uploads/documents/' . $fileName;
+    $fileUrl = '/manage-htsv/uploads/documents/' . $fileName;
     $stmt->bind_param("ssssi", $title, $description, $fileUrl, $documentType, $nguoiTaoId);
     $stmt->execute();
     

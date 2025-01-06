@@ -276,7 +276,7 @@ function exportReport() {
     const startDate = document.querySelector('input[name="startDate"]').value;
     const endDate = document.querySelector('input[name="endDate"]').value;
     // Sử dụng đường dẫn tuyệt đối
-    window.location.href = '/test_windsuft/admin/reports/export.php?startDate=' + startDate + '&endDate=' + endDate;
+    window.location.href = '/manage-htsv/admin/reports/export.php?startDate=' + startDate + '&endDate=' + endDate;
 }
 
 document.getElementById('filterForm').addEventListener('submit', function(e) {

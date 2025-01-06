@@ -41,7 +41,7 @@ include '../layouts/header.php';
         <?php foreach ($items as $item): ?>
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <?php if ($item['FileDinhKem']): ?>
-                    <img src="/test_windsuft/<?php echo htmlspecialchars($item['FileDinhKem']); ?>" 
+                    <img src="/manage-htsv/<?php echo htmlspecialchars($item['FileDinhKem']); ?>" 
                          alt="<?php echo htmlspecialchars($item['TieuDe']); ?>"
                          class="w-full h-48 object-cover">
                 <?php endif; ?>

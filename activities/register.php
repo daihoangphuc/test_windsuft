@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $activity = $stmt->get_result()->fetch_assoc();
     
     if (!$activity) {
-        echo json_encode(['success' => false, 'message' => 'Hoạt động không tồn tại hoặc không trong thời gian đăng ký']);
+        echo json_encode(['success' => false, 'message' => 'Không thể hủy đăng ký']);
         exit;
     }
     

@@ -3,7 +3,7 @@
 require_once __DIR__ . '/database.php';
 
 // Base URL configuration
-define('BASE_URL', 'http://localhost:81/test_windsuft');
+define('BASE_URL', 'http://localhost:81/manage-htsv');
 
 // Other configurations
 define('SITE_NAME', 'Quản lý CLB');

@@ -6,7 +6,7 @@ define('DB_PASS', '');
 define('DB_NAME', 'quanlyclb');
 
 // Base URL configuration
-define('BASE_URL', 'http://localhost:81/test_windsuft');
+define('BASE_URL', 'http://localhost:81/manage-htsv');
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {

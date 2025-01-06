@@ -26,9 +26,9 @@ $query = "SELECT h.*,
           FROM hoatdong h 
           LEFT JOIN danhsachdangky dk ON dk.HoatDongId = h.Id AND dk.TrangThai = 1
           LEFT JOIN danhsachthamgia dt ON dt.HoatDongId = h.Id
-          WHERE h.NgayKetThuc >= CURDATE()";
+          WHERE h.TrangThai = 0";
 
-$count_query = "SELECT COUNT(*) as total FROM hoatdong h WHERE h.NgayKetThuc >= CURDATE()";
+$count_query = "SELECT COUNT(*) as total FROM hoatdong h WHERE h.TrangThai = 0";
 
 if ($search) {
     $search_term = "%$search%";
@@ -37,6 +37,9 @@ if ($search) {
 }
 
 $query .= " GROUP BY h.Id ORDER BY h.NgayBatDau ASC LIMIT ? OFFSET ?";
+
+// Debug query
+echo "<!-- Debug: Current date = " . date('Y-m-d H:i:s') . " -->";
 
 // Đếm tổng số bản ghi
 if ($search) {
@@ -63,7 +66,6 @@ $activities = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $pageTitle = 'Danh sách hoạt động';
 require_once '../layouts/header.php';
 ?>
-
 <!-- Flash Message -->
 <div id="flashMessage" class="fixed top-4 right-4 z-50 hidden">
     <div class="px-4 py-3 rounded relative" role="alert">
