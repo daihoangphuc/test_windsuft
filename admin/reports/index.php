@@ -97,39 +97,78 @@ function get_finance_chart_data($conn, $startDate, $endDate) {
 }
 
 // Lấy dữ liệu biểu đồ nhiệm vụ theo trạng thái
-function get_task_chart_data($conn, $startDate, $endDate) {
+function get_task_chart_data($conn) {
     $query = "
         SELECT 
             TrangThai,
             COUNT(*) as count
         FROM nhiemvu
-        WHERE NgayTao BETWEEN ? AND ?
         GROUP BY TrangThai
+        ORDER BY TrangThai
     ";
     
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("ss", $startDate, $endDate);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $result = $conn->query($query);
+    $chartData = [0, 0, 0, 0]; // Khởi tạo mảng với 4 trạng thái
+    $total = 0;
     
-    $chartData = [];
     while ($row = $result->fetch_assoc()) {
-        $chartData[] = $row;
+        $chartData[$row['TrangThai']] = (int)$row['count'];
+        $total += (int)$row['count'];
     }
     
-    return $chartData;
+    return [
+        'data' => $chartData,
+        'total' => $total
+    ];
+}
+
+// Lấy dữ liệu biểu đồ phân công nhiệm vụ
+function get_task_assignment_data($conn) {
+    $query = "
+        SELECT 
+            u.HoTen,
+            COUNT(DISTINCT pc.NhiemVuId) as TongNhiemVu,
+            SUM(CASE WHEN nv.TrangThai = 0 THEN 1 ELSE 0 END) as ChuaBatDau,
+            SUM(CASE WHEN nv.TrangThai = 1 THEN 1 ELSE 0 END) as DangThucHien,
+            SUM(CASE WHEN nv.TrangThai = 2 THEN 1 ELSE 0 END) as HoanThanh,
+            SUM(CASE WHEN nv.TrangThai = 3 THEN 1 ELSE 0 END) as QuaHan
+        FROM nguoidung u
+        LEFT JOIN phancongnhiemvu pc ON u.Id = pc.NguoiDungId
+        LEFT JOIN nhiemvu nv ON pc.NhiemVuId = nv.Id
+        WHERE u.VaiTroId = 2 AND pc.Id IS NOT NULL
+        GROUP BY u.Id, u.HoTen
+        ORDER BY TongNhiemVu DESC
+        LIMIT 10
+    ";
+    
+    $result = $conn->query($query);
+    $data = [
+        'labels' => [],
+        'chuaBatDau' => [],
+        'dangThucHien' => [],
+        'hoanThanh' => [],
+        'quaHan' => []
+    ];
+    
+    while ($row = $result->fetch_assoc()) {
+        $data['labels'][] = $row['HoTen'];
+        $data['chuaBatDau'][] = (int)$row['ChuaBatDau'];
+        $data['dangThucHien'][] = (int)$row['DangThucHien'];
+        $data['hoanThanh'][] = (int)$row['HoanThanh'];
+        $data['quaHan'][] = (int)$row['QuaHan'];
+    }
+    
+    return $data;
 }
 
 // Lấy thống kê
 $statistics = get_statistics($conn, $startDate, $endDate);
 $financeChartData = get_finance_chart_data($conn, $startDate, $endDate);
-$taskChartData = get_task_chart_data($conn, $startDate, $endDate);
+$taskChartData = get_task_chart_data($conn);
+$taskAssignmentData = get_task_assignment_data($conn);
 
-// Nội dung trang
-ob_start();
+require_once __DIR__ . '/../../layouts/admin_header.php';
 ?>
-
-<?php require_once __DIR__ . '/../../layouts/admin_header.php'; ?>
 
 <div class="p-4">
     <div class="mb-6">
@@ -207,7 +246,13 @@ ob_start();
             <!-- Task Status Chart -->
             <div class="bg-white rounded-lg shadow p-4">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Biểu đồ trạng thái nhiệm vụ</h3>
-                <canvas id="taskChart"></canvas>
+                <div class="relative" style="height: 300px;">
+                    <canvas id="taskChart"></canvas>
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                        <div class="text-3xl font-bold text-gray-700"><?php echo $taskChartData['total']; ?></div>
+                        <div class="text-sm text-gray-500">Tổng nhiệm vụ</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -249,24 +294,104 @@ new Chart(financeCtx, {
 // Task Chart
 const taskCtx = document.getElementById('taskChart').getContext('2d');
 new Chart(taskCtx, {
-    type: 'pie',
+    type: 'doughnut',
     data: {
-        labels: ['Chờ xử lý', 'Đang thực hiện', 'Hoàn thành'],
+        labels: ['Chưa bắt đầu', 'Đang thực hiện', 'Hoàn thành', 'Quá hạn'],
         datasets: [{
-            data: [
-                <?php echo $taskChartData[0]['count'] ?? 0; ?>,
-                <?php echo $taskChartData[1]['count'] ?? 0; ?>,
-                <?php echo $taskChartData[2]['count'] ?? 0; ?>
-            ],
-            backgroundColor: [
-                'rgb(234, 179, 8)',
-                'rgb(59, 130, 246)',
-                'rgb(34, 197, 94)'
-            ]
+            data: <?php echo json_encode($taskChartData['data']); ?>,
+            backgroundColor: ['#94a3b8', '#3b82f6', '#22c55e', '#ef4444'],
+            borderWidth: 0,
+            cutout: '70%'
         }]
     },
     options: {
-        responsive: true
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true,
+                    pointStyle: 'circle'
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const value = context.raw;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                        return `${context.label}: ${value} (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Task Assignment Chart
+const taskAssignmentCtx = document.getElementById('taskAssignmentChart').getContext('2d');
+new Chart(taskAssignmentCtx, {
+    type: 'bar',
+    data: {
+        labels: <?php echo json_encode($taskAssignmentData['labels']); ?>,
+        datasets: [
+            {
+                label: 'Chưa bắt đầu',
+                data: <?php echo json_encode($taskAssignmentData['chuaBatDau']); ?>,
+                backgroundColor: '#94a3b8',
+                borderWidth: 0
+            },
+            {
+                label: 'Đang thực hiện',
+                data: <?php echo json_encode($taskAssignmentData['dangThucHien']); ?>,
+                backgroundColor: '#3b82f6',
+                borderWidth: 0
+            },
+            {
+                label: 'Hoàn thành',
+                data: <?php echo json_encode($taskAssignmentData['hoanThanh']); ?>,
+                backgroundColor: '#22c55e',
+                borderWidth: 0
+            },
+            {
+                label: 'Quá hạn',
+                data: <?php echo json_encode($taskAssignmentData['quaHan']); ?>,
+                backgroundColor: '#ef4444',
+                borderWidth: 0
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                stacked: true,
+                ticks: {
+                    maxRotation: 45,
+                    minRotation: 45
+                }
+            },
+            y: {
+                stacked: true,
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Số lượng nhiệm vụ'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top'
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false
+            }
+        }
     }
 });
 </script>
@@ -275,7 +400,6 @@ new Chart(taskCtx, {
 function exportReport() {
     const startDate = document.querySelector('input[name="startDate"]').value;
     const endDate = document.querySelector('input[name="endDate"]').value;
-    // Sử dụng đường dẫn tuyệt đối
     window.location.href = '/manage-htsv/admin/reports/export.php?startDate=' + startDate + '&endDate=' + endDate;
 }
 

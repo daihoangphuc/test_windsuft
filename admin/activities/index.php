@@ -77,18 +77,21 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
     </div>
 
     <!-- Bảng danh sách hoạt động -->
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg cursor-grab" id="tableContainer">
         <table class="w-full text-sm text-left text-gray-500">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
-                    <th scope="col" class="px-6 py-3">Tên hoạt động</th>
-                    <th scope="col" class="px-6 py-3">Thời gian</th>
-                    <th scope="col" class="px-6 py-3">Địa điểm</th>
-                    <th scope="col" class="px-6 py-3">Trạng thái</th>
-                    <th scope="col" class="px-6 py-3">Số lượng</th>
-                    <th scope="col" class="px-6 py-3">Minh chứng</th>
-                    <th scope="col" class="px-6 py-3">
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Tên hoạt động</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Thời gian</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Địa điểm</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Trạng thái</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Số lượng</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Minh chứng</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">
                         <span class="sr-only">Thao tác</span>
+                    </th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">
+                        <span class="sr-only">Chi tiết</span>
                     </th>
                 </tr>
             </thead>
@@ -101,16 +104,19 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                         (($item['SoLuong'] - $remainingSlots) / $item['SoLuong']) * 100 : 0;
                 ?>
                 <tr class="bg-white border-b hover:bg-gray-50">
-                    <td class="px-6 py-4 font-medium text-gray-900">
-                        <?php echo htmlspecialchars($item['TenHoatDong']); ?>
+                    <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                    <a href="view.php?id=<?php echo $item['Id']; ?>" 
+                           class="font-medium text-blue-600 hover:underline">
+                            <?php echo htmlspecialchars($item['TenHoatDong']); ?>
+                        </a>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <?php 
                         echo date('d/m/Y H:i', strtotime($item['NgayBatDau'])) . ' - <br>' . 
                              date('d/m/Y H:i', strtotime($item['NgayKetThuc'])); 
                         ?>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <?php echo htmlspecialchars($item['DiaDiem']); ?>
                         <?php if ($item['ToaDo']): ?>
                             <a href="https://www.google.com/maps?q=<?php echo $item['ToaDo']; ?>" 
@@ -120,12 +126,12 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                             </a>
                         <?php endif; ?>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 py-1 rounded text-xs font-medium <?php echo $activity->getStatusClass($item['TrangThai']); ?>">
                             <?php echo $activity->getStatusText($item['TrangThai']); ?>
                         </span>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex flex-col">
                             <span class="text-sm mb-1">
                                 <?php echo ($item['SoLuong'] - $remainingSlots) . '/' . $item['SoLuong']; ?>
@@ -137,7 +143,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <?php if ($item['DuongDanMinhChung']): ?>
                             <a href="<?php echo htmlspecialchars($item['DuongDanMinhChung']); ?>" 
                                target="_blank"
@@ -151,7 +157,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                             </button>
                         <?php endif; ?>
                     </td>
-                    <td class="px-6 py-4 text-right space-x-2">
+                    <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
                         <a href="manage_attendance.php?id=<?php echo $item['Id']; ?>" class="font-medium text-blue-600 hover:underline">
                             <i class="fas fa-clipboard-check"></i> Điểm danh
                         </a>
@@ -632,6 +638,40 @@ document.getElementById('evidenceForm').addEventListener('submit', function(e) {
         console.error('Error:', error);
         alert('Có lỗi xảy ra khi cập nhật minh chứng!');
     });
+});
+
+// Thêm tính năng kéo ngang bằng chuột
+const tableContainer = document.getElementById('tableContainer');
+let isDown = false;
+let startX;
+let scrollLeft;
+
+tableContainer.addEventListener('mousedown', (e) => {
+    isDown = true;
+    tableContainer.classList.remove('cursor-grab');
+    tableContainer.classList.add('cursor-grabbing');
+    startX = e.pageX - tableContainer.offsetLeft;
+    scrollLeft = tableContainer.scrollLeft;
+});
+
+tableContainer.addEventListener('mouseleave', () => {
+    isDown = false;
+    tableContainer.classList.remove('cursor-grabbing');
+    tableContainer.classList.add('cursor-grab');
+});
+
+tableContainer.addEventListener('mouseup', () => {
+    isDown = false;
+    tableContainer.classList.remove('cursor-grabbing');
+    tableContainer.classList.add('cursor-grab');
+});
+
+tableContainer.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - tableContainer.offsetLeft;
+    const walk = (x - startX) * 2; // Tốc độ scroll
+    tableContainer.scrollLeft = scrollLeft - walk;
 });
 </script>
 

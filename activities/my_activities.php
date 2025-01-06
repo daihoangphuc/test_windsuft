@@ -1,28 +1,12 @@
 <?php
 require_once '../config/database.php';
 require_once '../config/auth.php';
+require_once '../includes/functions.php';
 
 $auth = new Auth();
 $auth->requireLogin();
 
 $db = Database::getInstance()->getConnection();
-
-// Function to calculate distance between two coordinates using Haversine formula
-function calculateDistance($lat1, $lon1, $lat2, $lon2) {
-    $earthRadius = 6371000; // Earth's radius in meters
-    $lat1 = deg2rad($lat1);
-    $lon1 = deg2rad($lon1);
-    $lat2 = deg2rad($lat2);
-    $lon2 = deg2rad($lon2);
-    
-    $dlat = $lat2 - $lat1;
-    $dlon = $lon2 - $lon1;
-    
-    $a = sin($dlat/2) * sin($dlat/2) + cos($lat1) * cos($lat2) * sin($dlon/2) * sin($dlon/2);
-    $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-    
-    return $earthRadius * $c;
-}
 
 // Handle attendance submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'attendance') {
@@ -84,14 +68,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if ($stmt->execute()) {
         echo json_encode(['success' => true, 'message' => 'Điểm danh thành công']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Lỗi khi điểm danh']);
+        echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi điểm danh']);
     }
     exit;
 }
 
-// Get user's activities
-$query = "
-    SELECT 
+// Xử lý xuất Excel
+if (isset($_GET['export']) && $_GET['export'] === 'excel') {
+    require_once '../vendor/autoload.php';
+    
+    $spreadsheet = new PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    
+    // Đặt tiêu đề
+    $sheet->setCellValue('A1', 'Tên hoạt động');
+    $sheet->setCellValue('B1', 'Thời gian bắt đầu');
+    $sheet->setCellValue('C1', 'Thời gian kết thúc');
+    $sheet->setCellValue('D1', 'Địa điểm');
+    $sheet->setCellValue('E1', 'Ngày đăng ký');
+    $sheet->setCellValue('F1', 'Trạng thái');
+    
+    // Lấy dữ liệu từ database (sử dụng các filter hiện tại)
+    $activities = getActivities($db, $_SESSION['user_id'], $_GET);
+    
+    // Đổ dữ liệu vào file Excel
+    $row = 2;
+    foreach ($activities as $activity) {
+        $sheet->setCellValue('A'.$row, $activity['TenHoatDong']);
+        $sheet->setCellValue('B'.$row, formatDateTime($activity['NgayBatDau']));
+        $sheet->setCellValue('C'.$row, formatDateTime($activity['NgayKetThuc']));
+        $sheet->setCellValue('D'.$row, $activity['DiaDiem']);
+        $sheet->setCellValue('E'.$row, formatDateTime($activity['ThoiGianDangKy']));
+        $sheet->setCellValue('F'.$row, $activity['TrangThai']);
+        $row++;
+    }
+    
+    // Tự động điều chỉnh độ rộng cột
+    foreach(range('A','F') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+    
+    // Tạo writer và output file
+    $writer = new PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="hoat_dong_cua_toi.xlsx"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit;
+}
+
+// Xử lý phân trang và filter
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$limit = 10;
+$offset = ($page - 1) * $limit;
+
+$search = $_GET['search'] ?? '';
+$startDate = $_GET['start_date'] ?? '';
+$endDate = $_GET['end_date'] ?? '';
+
+// Base query for activities
+$baseQuery = "
+    FROM danhsachdangky dk
+    JOIN hoatdong h ON dk.HoatDongId = h.Id
+    LEFT JOIN danhsachthamgia dt ON dt.HoatDongId = h.Id AND dt.NguoiDungId = dk.NguoiDungId
+    JOIN nguoidung n ON dk.NguoiDungId = n.Id
+    WHERE dk.NguoiDungId = ? AND dk.TrangThai = 1";
+
+// Add search and date filters
+$params = [$_SESSION['user_id']];
+$types = "i";
+
+if (!empty($search)) {
+    $baseQuery .= " AND h.TenHoatDong LIKE ?";
+    $params[] = "%$search%";
+    $types .= "s";
+}
+
+if (!empty($startDate)) {
+    $baseQuery .= " AND h.NgayBatDau >= ?";
+    $params[] = $startDate;
+    $types .= "s";
+}
+
+if (!empty($endDate)) {
+    $baseQuery .= " AND h.NgayKetThuc <= ?";
+    $params[] = $endDate;
+    $types .= "s";
+}
+
+// Count total records
+$countQuery = "SELECT COUNT(DISTINCT dk.Id) as total " . $baseQuery;
+$countStmt = $db->prepare($countQuery);
+$countStmt->bind_param($types, ...$params);
+$countStmt->execute();
+$totalRecords = $countStmt->get_result()->fetch_assoc()['total'];
+$totalPages = ceil($totalRecords / $limit);
+
+// Main query for fetching activities
+$mainQuery = "
+    SELECT DISTINCT
         h.Id,
         h.TenHoatDong,
         h.MoTa,
@@ -117,26 +192,27 @@ $query = "
             WHEN dt.Id IS NOT NULL THEN dt.TrangThai
             WHEN h.NgayKetThuc < DATE_SUB(NOW(), INTERVAL 1 DAY) THEN 0
             ELSE NULL
-        END as ThamGiaTrangThai
-    FROM danhsachdangky dk
-    JOIN hoatdong h ON dk.HoatDongId = h.Id
-    LEFT JOIN danhsachthamgia dt ON dt.HoatDongId = h.Id AND dt.NguoiDungId = dk.NguoiDungId
-    WHERE dk.NguoiDungId = ? AND dk.TrangThai = 1
-    ORDER BY h.NgayBatDau DESC";
+        END as ThamGiaTrangThai " . 
+    $baseQuery . "
+    ORDER BY h.NgayBatDau DESC 
+    LIMIT ? OFFSET ?";
 
-$stmt = $db->prepare($query);
-$stmt->bind_param("i", $_SESSION['user_id']);
+// Add pagination parameters
+$params[] = $limit;
+$params[] = $offset;
+$types .= "ii";
+
+// Execute main query
+$stmt = $db->prepare($mainQuery);
+$stmt->bind_param($types, ...$params);
 $stmt->execute();
 $activities = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Get statistics
-$stats_query = "
+$statsQuery = "
     SELECT 
-        COUNT(*) as TongDangKy,
-        SUM(CASE 
-            WHEN dt.TrangThai = 1 THEN 1 
-            ELSE 0 
-        END) as TongThamGia,
+        COUNT(DISTINCT dk.Id) as TongDangKy,
+        SUM(CASE WHEN dt.TrangThai = 1 THEN 1 ELSE 0 END) as TongThamGia,
         SUM(CASE 
             WHEN dt.TrangThai = 0 OR 
                  (dt.Id IS NULL AND h.NgayKetThuc < DATE_SUB(NOW(), INTERVAL 1 DAY)) 
@@ -148,14 +224,15 @@ $stats_query = "
     LEFT JOIN danhsachthamgia dt ON dt.HoatDongId = h.Id AND dt.NguoiDungId = dk.NguoiDungId
     WHERE dk.NguoiDungId = ? AND dk.TrangThai = 1";
 
-$stmt = $db->prepare($stats_query);
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$stats = $stmt->get_result()->fetch_assoc();
+$statsStmt = $db->prepare($statsQuery);
+$statsStmt->bind_param("i", $_SESSION['user_id']);
+$statsStmt->execute();
+$stats = $statsStmt->get_result()->fetch_assoc();
 
 $pageTitle = "Hoạt động của tôi";
 require_once '../layouts/header.php';
 ?>
+
 <div class="p-4">
     <div class="mb-4">
         <h2 class="text-2xl font-bold text-[#4a90e2]">Hoạt động của tôi</h2>
@@ -176,6 +253,37 @@ require_once '../layouts/header.php';
             <h3 class="text-lg font-semibold mb-2">Vắng mặt</h3>
             <p class="text-3xl font-bold text-red-600"><?php echo number_format($stats['TongVang']); ?></p>
         </div>
+    </div>
+
+    <!-- Search and Filter Form -->
+    <div class="bg-white p-4 rounded-lg shadow mb-4">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+                <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" 
+                       placeholder="Tên hoạt động..." 
+                       class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Từ ngày</label>
+                <input type="date" name="start_date" value="<?php echo htmlspecialchars($startDate); ?>" 
+                       class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Đến ngày</label>
+                <input type="date" name="end_date" value="<?php echo htmlspecialchars($endDate); ?>" 
+                       class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div class="flex items-end gap-2">
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">
+                    <i class="fas fa-search mr-2"></i>Tìm kiếm
+                </button>
+                <a href="?export=excel<?php echo !empty($search) ? '&search='.urlencode($search) : ''; ?><?php echo !empty($startDate) ? '&start_date='.urlencode($startDate) : ''; ?><?php echo !empty($endDate) ? '&end_date='.urlencode($endDate) : ''; ?>" 
+                   class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg">
+                    <i class="fas fa-file-excel mr-2"></i>Xuất Excel
+                </a>
+            </div>
+        </form>
     </div>
 
     <!-- Activities List -->
@@ -199,34 +307,37 @@ require_once '../layouts/header.php';
                         </td>
                         <td class="px-6 py-4">
                             <?php 
-                            echo date('d/m/Y H:i', strtotime($activity['NgayBatDau'])) . ' - ' . 
-                                 date('d/m/Y H:i', strtotime($activity['NgayKetThuc'])); 
+                            $start = new DateTime($activity['NgayBatDau']);
+                            $end = new DateTime($activity['NgayKetThuc']);
+                            echo $start->format('d/m/Y H:i') . ' - ' . $end->format('d/m/Y H:i');
                             ?>
                         </td>
                         <td class="px-6 py-4">
                             <?php echo htmlspecialchars($activity['DiaDiem']); ?>
                         </td>
                         <td class="px-6 py-4">
-                            <?php echo date('d/m/Y H:i', strtotime($activity['ThoiGianDangKy'])); ?>
+                            <?php 
+                            $regDate = new DateTime($activity['ThoiGianDangKy']);
+                            echo $regDate->format('d/m/Y H:i'); 
+                            ?>
                         </td>
                         <td class="px-6 py-4">
                             <?php
-                            $status_class = '';
+                            $statusClass = '';
                             switch ($activity['TrangThai']) {
                                 case 'Đã tham gia':
-                                    $status_class = 'text-green-500';
+                                    $statusClass = 'text-green-600';
                                     break;
                                 case 'Vắng mặt':
-                                    $status_class = 'text-red-500';
-                                    break;
-                                case 'Chờ điểm danh':
-                                    $status_class = 'text-orange-500';
+                                    $statusClass = 'text-red-600';
                                     break;
                                 default:
-                                    $status_class = 'text-blue-500';
+                                    $statusClass = 'text-blue-600';
                             }
                             ?>
-                            <span class="<?php echo $status_class; ?>"><?php echo $activity['TrangThai']; ?></span>
+                            <span class="<?php echo $statusClass; ?> font-medium">
+                                <?php echo htmlspecialchars($activity['TrangThai']); ?>
+                            </span>
                         </td>
                         <td class="px-6 py-4">
                             <?php
@@ -235,15 +346,7 @@ require_once '../layouts/header.php';
                             $timeWindow = clone $endTime;
                             $timeWindow->modify('-15 minutes');
                             
-                            // Debug information
-                            echo "<!-- Debug: \n";
-                            echo "Current time: " . $now->format('Y-m-d H:i:s') . "\n";
-                            echo "End time: " . $endTime->format('Y-m-d H:i:s') . "\n";
-                            echo "Time window: " . $timeWindow->format('Y-m-d H:i:s') . "\n";
-                            echo "Status: " . $activity['TrangThai'] . "\n";
-                            echo "-->";
-                            
-                            if ($activity['TrangThai'] === 'Đã đăng ký' && $now >= $timeWindow && $now <= $endTime):
+                            if ($activity['HoatDongTrangThai'] == 1 && $now >= $timeWindow && $now <= $endTime && $activity['ThamGiaTrangThai'] === null):
                             ?>
                                 <button onclick="submitAttendance(<?php echo $activity['Id']; ?>)" 
                                         class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-4 py-2">
@@ -251,7 +354,7 @@ require_once '../layouts/header.php';
                                 </button>
                             <?php else: ?>
                                 <a href="view.php?id=<?php echo $activity['Id']; ?>" 
-                                   class="font-medium text-blue-600 hover:underline">
+                                   class="text-blue-600 hover:underline">
                                     Xem chi tiết
                                 </a>
                             <?php endif; ?>
@@ -261,12 +364,40 @@ require_once '../layouts/header.php';
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    <?php if ($totalPages > 1): ?>
+    <div class="mt-4 flex justify-center">
+        <nav class="inline-flex rounded-md shadow">
+            <?php if ($page > 1): ?>
+            <a href="?page=<?php echo ($page-1); ?><?php echo !empty($search) ? '&search='.urlencode($search) : ''; ?><?php echo !empty($startDate) ? '&start_date='.urlencode($startDate) : ''; ?><?php echo !empty($endDate) ? '&end_date='.urlencode($endDate) : ''; ?>" 
+               class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+                Trước
+            </a>
+            <?php endif; ?>
+            
+            <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
+            <a href="?page=<?php echo $i; ?><?php echo !empty($search) ? '&search='.urlencode($search) : ''; ?><?php echo !empty($startDate) ? '&start_date='.urlencode($startDate) : ''; ?><?php echo !empty($endDate) ? '&end_date='.urlencode($endDate) : ''; ?>" 
+               class="px-3 py-2 text-sm font-medium <?php echo $i === $page ? 'text-blue-600 bg-blue-50 border-blue-500' : 'text-gray-700 bg-white border-gray-300'; ?> border hover:bg-gray-50">
+                <?php echo $i; ?>
+            </a>
+            <?php endfor; ?>
+            
+            <?php if ($page < $totalPages): ?>
+            <a href="?page=<?php echo ($page+1); ?><?php echo !empty($search) ? '&search='.urlencode($search) : ''; ?><?php echo !empty($startDate) ? '&start_date='.urlencode($startDate) : ''; ?><?php echo !empty($endDate) ? '&end_date='.urlencode($endDate) : ''; ?>" 
+               class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+                Sau
+            </a>
+            <?php endif; ?>
+        </nav>
+    </div>
+    <?php endif; ?>
 </div>
 
 <script>
 function submitAttendance(activityId) {
     if (!navigator.geolocation) {
-        alert('Trình duyệt của bạn không hỗ trợ định vị');
+        alert('Trình duyệt của bạn không hỗ trợ định vị GPS');
         return;
     }
 
@@ -278,7 +409,7 @@ function submitAttendance(activityId) {
             data.append('latitude', position.coords.latitude);
             data.append('longitude', position.coords.longitude);
 
-            fetch(window.location.href, {
+            fetch('my_activities.php', {
                 method: 'POST',
                 body: data
             })
@@ -286,7 +417,7 @@ function submitAttendance(activityId) {
             .then(data => {
                 alert(data.message);
                 if (data.success) {
-                    window.location.reload();
+                    location.reload();
                 }
             })
             .catch(error => {
@@ -304,7 +435,7 @@ function submitAttendance(activityId) {
                     message += 'Không thể lấy được vị trí';
                     break;
                 case error.TIMEOUT:
-                    message += 'Hết thởi gian chờ lấy vị trí';
+                    message += 'Hết thời gian chờ lấy vị trí';
                     break;
                 default:
                     message += 'Lỗi không xác định';

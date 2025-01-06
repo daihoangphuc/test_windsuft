@@ -168,6 +168,8 @@ class Activity {
                 $status = 1; // Đang diễn ra
             } else {
                 $status = 2; // Đã kết thúc
+                // Khi hoạt động kết thúc, tự động thêm người không điểm danh vào bảng danhsachthamgia
+                $this->autoMarkAttendance($activityId);
             }
 
             $updateQuery = "UPDATE hoatdong SET TrangThai = ? WHERE Id = ?";
@@ -178,11 +180,28 @@ class Activity {
         return false;
     }
 
+    private function autoMarkAttendance($activityId) {
+        // Lấy danh sách người đăng ký chưa có trong bảng danhsachthamgia
+        $query = "INSERT INTO danhsachthamgia (NguoiDungId, HoatDongId, TrangThai)
+                 SELECT dk.NguoiDungId, dk.HoatDongId, 0
+                 FROM danhsachdangky dk
+                 LEFT JOIN danhsachthamgia dt 
+                    ON dk.NguoiDungId = dt.NguoiDungId 
+                    AND dk.HoatDongId = dt.HoatDongId
+                 WHERE dk.HoatDongId = ? 
+                    AND dk.TrangThai = 1 
+                    AND dt.Id IS NULL";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $activityId);
+        return $stmt->execute();
+    }
+
     public function getRemainingSlots($activityId) {
         $query = "SELECT h.SoLuong, COUNT(dk.Id) as registered 
                  FROM hoatdong h 
                  LEFT JOIN danhsachdangky dk ON dk.HoatDongId = h.Id AND dk.TrangThai = 1
-                 WHERE h.Id = ?
+                 WHERE h.Id = ? 
                  GROUP BY h.Id";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("i", $activityId);

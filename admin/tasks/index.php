@@ -47,13 +47,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     exit;
 }
 
-$pageTitle = "Quản lý nhiệm vụ";
-require_once __DIR__ . '/../../layouts/admin_header.php';
+// Xử lý phân trang
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$limit = 10;
+$offset = ($page - 1) * $limit;
 
-// Get task statistics
-$stats = $task->getTaskStatistics();
+// Lấy tổng số nhiệm vụ
+$total_query = "SELECT COUNT(*) as total FROM nhiemvu";
+$total_result = $db->query($total_query);
+$total_row = $total_result->fetch_assoc();
+$total_tasks = $total_row['total'];
+$total_pages = ceil($total_tasks / $limit);
 
-// Lấy danh sách nhiệm vụ với thông tin người được phân công
+// Lấy danh sách người dùng cho dropdown
+$users_query = "SELECT Id, HoTen FROM nguoidung WHERE TrangThai = 1 AND VaiTroId = 2";
+$users_result = $db->query($users_query);
+$users = $users_result->fetch_all(MYSQLI_ASSOC);
+
+// Lấy danh sách nhiệm vụ có phân trang
 $query = "SELECT 
             nv.*, 
             nd.HoTen as NguoiThucHien,
@@ -68,14 +79,15 @@ $query = "SELECT
           FROM nhiemvu nv 
           LEFT JOIN phancongnhiemvu pc ON nv.Id = pc.NhiemVuId 
           LEFT JOIN nguoidung nd ON pc.NguoiDungId = nd.Id 
-          ORDER BY nv.NgayTao DESC";
+          ORDER BY nv.NgayTao DESC LIMIT $limit OFFSET $offset";
 $result = $db->query($query);
 $tasks = $result->fetch_all(MYSQLI_ASSOC);
 
-// Lấy danh sách người dùng để phân công
-$users_query = "SELECT Id, HoTen FROM nguoidung WHERE TrangThai = 1 AND VaiTroId = 2";
-$users_result = $db->query($users_query);
-$users = $users_result->fetch_all(MYSQLI_ASSOC);
+$pageTitle = "Quản lý nhiệm vụ";
+require_once __DIR__ . '/../../layouts/admin_header.php';
+
+// Get task statistics
+$stats = $task->getTaskStatistics();
 
 ?>
 
@@ -125,28 +137,32 @@ $users = $users_result->fetch_all(MYSQLI_ASSOC);
         </div>
     <?php endif; ?>
 
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg cursor-grab" id="tableContainer">
         <table class="w-full text-sm text-left text-gray-500">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
-                    <th scope="col" class="px-6 py-3">Tên nhiệm vụ</th>
-                    <th scope="col" class="px-6 py-3">Mô tả</th>
-                    <th scope="col" class="px-6 py-3">Người thực hiện</th>
-                    <th scope="col" class="px-6 py-3">Ngày bắt đầu</th>
-                    <th scope="col" class="px-6 py-3">Ngày kết thúc</th>
-                    <th scope="col" class="px-6 py-3">Trạng thái</th>
-                    <th scope="col" class="px-6 py-3">Thao tác</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Tên nhiệm vụ</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Mô tả</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Người thực hiện</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Trạng thái</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Ngày bắt đầu</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Ngày kết thúc</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($tasks as $task): ?>
                     <tr class="bg-white border-b hover:bg-gray-50">
-                        <td class="px-6 py-4 font-medium text-gray-900"><?php echo htmlspecialchars($task['TenNhiemVu']); ?></td>
-                        <td class="px-6 py-4"><?php echo htmlspecialchars($task['MoTa']); ?></td>
-                        <td class="px-6 py-4"><?php echo $task['NguoiThucHien'] ?? 'Chưa phân công'; ?></td>
-                        <td class="px-6 py-4"><?php echo date('d/m/Y H:i', strtotime($task['NgayBatDau'])); ?></td>
-                        <td class="px-6 py-4"><?php echo date('d/m/Y H:i', strtotime($task['NgayKetThuc'])); ?></td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                            <?php echo htmlspecialchars($task['TenNhiemVu']); ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <?php echo htmlspecialchars($task['MoTa']); ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <?php echo $task['NguoiThucHien'] ?? 'Chưa phân công'; ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <?php
                             $status_class = '';
                             switch ($task['TrangThai']) {
@@ -170,17 +186,26 @@ $users = $users_result->fetch_all(MYSQLI_ASSOC);
                                 <?php echo $task['TrangThaiText']; ?>
                             </span>
                         </td>
-                        <td class="px-6 py-4 space-x-2">
-                            <button data-modal-target="statusModal-<?php echo $task['Id']; ?>" 
-                                    data-modal-toggle="statusModal-<?php echo $task['Id']; ?>" 
-                                    class="text-blue-600 hover:text-blue-900">
-                                <i class="fas fa-edit"></i> Cập nhật trạng thái
-                            </button>
-                            <button data-modal-target="assignModal-<?php echo $task['Id']; ?>" 
-                                    data-modal-toggle="assignModal-<?php echo $task['Id']; ?>" 
-                                    class="text-yellow-600 hover:text-yellow-900">
-                                <i class="fas fa-user-plus"></i> Phân công
-                            </button>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <?php echo date('d/m/Y H:i', strtotime($task['NgayBatDau'])); ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <?php echo date('d/m/Y H:i', strtotime($task['NgayKetThuc'])); ?>
+                        </td>
+                        
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <div class="flex items-center space-x-2">
+                                <button data-modal-target="statusModal-<?php echo $task['Id']; ?>" 
+                                        data-modal-toggle="statusModal-<?php echo $task['Id']; ?>" 
+                                        class="text-blue-600 hover:text-blue-900">
+                                    <i class="fas fa-edit"></i> Cập nhật trạng thái
+                                </button>
+                                <button data-modal-target="assignModal-<?php echo $task['Id']; ?>" 
+                                        data-modal-toggle="assignModal-<?php echo $task['Id']; ?>" 
+                                        class="text-yellow-600 hover:text-yellow-900">
+                                    <i class="fas fa-user-plus"></i> Phân công
+                                </button>
+                            </div>
                         </td>
                     </tr>
 
@@ -230,9 +255,108 @@ $users = $users_result->fetch_all(MYSQLI_ASSOC);
             </tbody>
         </table>
     </div>
-</div>
 
-<!-- Modal thêm nhiệm vụ mới -->
-<?php include 'add_task_modal.php'; ?>
+    <script>
+    // Thêm tính năng kéo ngang bằng chuột
+    const tableContainer = document.getElementById('tableContainer');
+    let isDown = false;
+    let startX;
+    let scrollLeft;
 
-<?php require_once __DIR__ . '/../../layouts/admin_footer.php'; ?>
+    tableContainer.addEventListener('mousedown', (e) => {
+        isDown = true;
+        tableContainer.classList.remove('cursor-grab');
+        tableContainer.classList.add('cursor-grabbing');
+        startX = e.pageX - tableContainer.offsetLeft;
+        scrollLeft = tableContainer.scrollLeft;
+    });
+
+    tableContainer.addEventListener('mouseleave', () => {
+        isDown = false;
+        tableContainer.classList.remove('cursor-grabbing');
+        tableContainer.classList.add('cursor-grab');
+    });
+
+    tableContainer.addEventListener('mouseup', () => {
+        isDown = false;
+        tableContainer.classList.remove('cursor-grabbing');
+        tableContainer.classList.add('cursor-grab');
+    });
+
+    tableContainer.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - tableContainer.offsetLeft;
+        const walk = (x - startX) * 2;
+        tableContainer.scrollLeft = scrollLeft - walk;
+    });
+    </script>
+
+    <!-- Phân trang -->
+    <?php if ($total_pages > 1): ?>
+    <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+        <div class="flex flex-1 justify-between sm:hidden">
+            <?php if ($page > 1): ?>
+                <a href="?page=<?php echo $page - 1; ?>" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Previous
+                </a>
+            <?php endif; ?>
+            <?php if ($page < $total_pages): ?>
+                <a href="?page=<?php echo $page + 1; ?>" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Next
+                </a>
+            <?php endif; ?>
+        </div>
+        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing
+                    <span class="font-medium"><?php echo $offset + 1; ?></span>
+                    to
+                    <span class="font-medium"><?php echo min($offset + $limit, $total_tasks); ?></span>
+                    of
+                    <span class="font-medium"><?php echo $total_tasks; ?></span>
+                    results
+                </p>
+            </div>
+            <div>
+                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                    <?php if ($page > 1): ?>
+                        <a href="?page=<?php echo $page - 1; ?>" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                            <span class="sr-only">Previous</span>
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    <?php endif; ?>
+
+                    <?php for($i = 1; $i <= $total_pages; $i++): ?>
+                        <?php if($i == $page): ?>
+                            <a href="?page=<?php echo $i; ?>" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                                <?php echo $i; ?>
+                            </a>
+                        <?php else: ?>
+                            <a href="?page=<?php echo $i; ?>" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                                <?php echo $i; ?>
+                            </a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $total_pages): ?>
+                        <a href="?page=<?php echo $page + 1; ?>" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                            <span class="sr-only">Next</span>
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    <?php endif; ?>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Modal thêm nhiệm vụ mới -->
+    <?php include 'add_task_modal.php'; ?>
+
+    <?php require_once __DIR__ . '/../../layouts/admin_footer.php'; ?>

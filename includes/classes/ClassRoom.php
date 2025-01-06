@@ -83,16 +83,62 @@ class ClassRoom {
         return $result->fetch_assoc();
     }
 
+    private function checkDuplicateName($tenLop, $excludeId = null) {
+        $sql = "SELECT COUNT(*) as count FROM lophoc WHERE TenLop = ?";
+        $params = [$tenLop];
+        $types = "s";
+
+        if ($excludeId !== null) {
+            $sql .= " AND Id != ?";
+            $params[] = $excludeId;
+            $types .= "i";
+        }
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        return $result['count'] > 0;
+    }
+
     public function create($tenLop, $khoaTruongId) {
+        // Kiểm tra tên lớp trùng
+        if ($this->checkDuplicateName($tenLop)) {
+            $_SESSION['error'] = "Tên lớp '$tenLop' đã tồn tại!";
+            return false;
+        }
+
         $stmt = $this->conn->prepare("INSERT INTO lophoc (TenLop, KhoaTruongId) VALUES (?, ?)");
         $stmt->bind_param("si", $tenLop, $khoaTruongId);
-        return $stmt->execute();
+        $success = $stmt->execute();
+        
+        if ($success) {
+            $_SESSION['success'] = "Thêm lớp thành công!";
+        } else {
+            $_SESSION['error'] = "Có lỗi xảy ra khi thêm lớp!";
+        }
+        
+        return $success;
     }
 
     public function update($id, $tenLop, $khoaTruongId) {
+        // Kiểm tra tên lớp trùng, loại trừ ID hiện tại
+        if ($this->checkDuplicateName($tenLop, $id)) {
+            $_SESSION['error'] = "Tên lớp '$tenLop' đã tồn tại!";
+            return false;
+        }
+
         $stmt = $this->conn->prepare("UPDATE lophoc SET TenLop = ?, KhoaTruongId = ? WHERE Id = ?");
         $stmt->bind_param("sii", $tenLop, $khoaTruongId, $id);
-        return $stmt->execute();
+        $success = $stmt->execute();
+        
+        if ($success) {
+            $_SESSION['success'] = "Cập nhật lớp thành công!";
+        } else {
+            $_SESSION['error'] = "Có lỗi xảy ra khi cập nhật lớp!";
+        }
+        
+        return $success;
     }
 
     public function delete($id) {

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/classes/ClassRoom.php';
 
+session_start();
 $classroom = new ClassRoom($conn);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -11,15 +12,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'create' && !empty($tenLop) && !empty($khoaTruongId)) {
         if ($classroom->create($tenLop, $khoaTruongId)) {
-            header('Location: index.php?success=create');
+            header('Location: index.php');
             exit;
         }
+        header('Location: index.php');
+        exit;
     } elseif ($action === 'update' && !empty($tenLop) && !empty($khoaTruongId)) {
         $id = $_POST['id'] ?? '';
         if ($classroom->update($id, $tenLop, $khoaTruongId)) {
-            header('Location: index.php?success=update');
+            header('Location: index.php');
             exit;
         }
+        header('Location: index.php');
+        exit;
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $action = $_GET['action'] ?? '';
@@ -27,12 +32,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete') {
         $id = $_GET['id'] ?? '';
         if ($classroom->delete($id)) {
-            header('Location: index.php?success=delete');
+            $_SESSION['success'] = "Xóa lớp thành công!";
+            header('Location: index.php');
             exit;
         }
+        $_SESSION['error'] = "Có lỗi xảy ra khi xóa lớp!";
+        header('Location: index.php');
+        exit;
     }
 }
 
-header('Location: index.php?error=general');
+$_SESSION['error'] = "Có lỗi xảy ra!";
+header('Location: index.php');
 exit;
 ?>

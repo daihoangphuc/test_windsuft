@@ -23,6 +23,25 @@ $stats = $classroom->getStatsByFaculty();
 ?>
 
 <div class="p-4 bg-white rounded-lg shadow-sm">
+    <!-- Hiển thị thông báo -->
+    <?php if (isset($_SESSION['success'])): ?>
+        <div id="successAlert" class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
+            <?php 
+            echo $_SESSION['success'];
+            unset($_SESSION['success']);
+            ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['error'])): ?>
+        <div id="errorAlert" class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+            <?php 
+            echo $_SESSION['error'];
+            unset($_SESSION['error']);
+            ?>
+        </div>
+    <?php endif; ?>
+
     <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold text-[#4a90e2]">Quản lý Lớp học</h2>
         <button data-modal-target="createModal" data-modal-toggle="createModal" class="bg-[#4a90e2] hover:bg-[#357abd] text-white px-4 py-2 rounded-lg transition duration-300">
@@ -202,20 +221,40 @@ $stats = $classroom->getStatsByFaculty();
 </div>
 
 <script>
-function editClass(id, tenLop, khoaTruongId) {
-    document.getElementById('editId').value = id;
-    document.getElementById('editTenLop').value = tenLop;
-    document.getElementById('editKhoaTruongId').value = khoaTruongId;
-    const editModal = document.getElementById('editModal');
-    const modal = new Modal(editModal);
-    modal.show();
-}
-
-function deleteClass(id) {
-    if (confirm('Bạn có chắc chắn muốn xóa lớp học này?')) {
-        window.location.href = `process.php?action=delete&id=${id}`;
+    // Hàm ẩn thông báo
+    function hideAlert(elementId) {
+        const alert = document.getElementById(elementId);
+        if (alert) {
+            setTimeout(() => {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 500);
+            }, 3000);
+        }
     }
-}
+
+    // Gọi hàm khi trang tải xong
+    document.addEventListener('DOMContentLoaded', function() {
+        hideAlert('successAlert');
+        hideAlert('errorAlert');
+    });
+
+    function editClass(id, tenLop, khoaTruongId) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editTenLop').value = tenLop;
+        document.getElementById('editKhoaTruongId').value = khoaTruongId;
+        const editModal = document.getElementById('editModal');
+        const modal = new Modal(editModal);
+        modal.show();
+    }
+
+    function deleteClass(id) {
+        if (confirm('Bạn có chắc chắn muốn xóa lớp học này?')) {
+            window.location.href = `process.php?action=delete&id=${id}`;
+        }
+    }
 </script>
 
 <?php require_once __DIR__ . '/../../layouts/admin_footer.php'; ?>
