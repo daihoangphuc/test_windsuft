@@ -131,7 +131,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                     <th scope="col" class="px-6 py-3">Chức vụ</th>
                     <th scope="col" class="px-6 py-3">Lớp/Khoa</th>
                     <th scope="col" class="px-6 py-3">Trạng thái</th>
-                    <th scope="col" class="px-6 py-3">Thao tác</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -146,26 +146,26 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                             <div class="text-base font-semibold">
                                 <?php echo htmlspecialchars($user['HoTen']); ?>
                             </div>
-                            <div class="font-normal text-gray-500">
+                            <div class="font-normal text-gray-500 mb-2">
                                 <?php echo htmlspecialchars($user['Email']); ?>
                             </div>
                             <div class="text-sm text-gray-500">
                                 <?php if ($user['MaSinhVien']): ?>
                                     <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                        <?php echo htmlspecialchars($user['MaSinhVien']); ?>
+                                        <?php echo "MSSV: " . htmlspecialchars($user['MaSinhVien']); ?>
                                     </span>
                                 <?php endif; ?>
                                 <?php
                                 $gioiTinhText = match ($user['GioiTinh']) {
-                                    1 => '<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Nam</span>',
-                                    0 => '<span class="bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded">Nữ</span>',
-                                    default => '<span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Khác</span>',
+                                    1 => '<span class="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">GT: Nam</span>',
+                                    0 => '<span class="ml-2 bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded">GT: Nữ</span>',
+                                    default => '<span class="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">GT: Khác</span>',
                                 };
                                 echo $gioiTinhText;
                                 ?>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <div class="font-medium">
                                 <?php echo htmlspecialchars($user['TenChucVu'] ?? 'Chưa có'); ?>
                             </div>
@@ -192,7 +192,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                                 <span class="text-gray-500">Chưa có lớp</span>
                             <?php endif; ?>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="h-2.5 w-2.5 rounded-full <?php echo $user['TrangThai'] ? 'bg-green-500' : 'bg-red-500'; ?> mr-2"></div>
                                 <button onclick="toggleUserStatus(<?php echo $user['Id']; ?>)" 
@@ -201,11 +201,15 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                                 </button>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="flex space-x-2">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex space-x-10">
                                 <a href="edit.php?id=<?php echo $user['Id']; ?>" 
-                                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                   class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline">
                                     Sửa
+                                </a>
+                                <a href="/manage-htsv/admin/student/view.php?id=<?php echo $user['Id']; ?>" 
+                                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                    Chi tiết
                                 </a>
                             </div>
                         </td>

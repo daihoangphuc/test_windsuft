@@ -172,7 +172,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
 
 <div class="p-4">
     <div class="mb-6">
-        <div class="flex justify-between items-center mb-4">
+        <!-- <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-bold text-gray-900">Báo cáo thống kê</h2>
             <div class="flex items-center gap-4">
                 <button onclick="exportReport()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded inline-flex items-center">
@@ -180,7 +180,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                     Xuất báo cáo
                 </button>
             </div>
-        </div>
+        </div> -->
 
         <!-- Filter Form -->
         <form id="filterForm" class="bg-white shadow-md rounded-lg p-4 mb-6">
@@ -246,9 +246,9 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
             <!-- Task Status Chart -->
             <div class="bg-white rounded-lg shadow p-4">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Biểu đồ trạng thái nhiệm vụ</h3>
-                <div class="relative" style="height: 300px;">
+                <div class="relative" style="height: 300px;" >
                     <canvas id="taskChart"></canvas>
-                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                    <div  style="margin-top: -20px;" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
                         <div class="text-3xl font-bold text-gray-700"><?php echo $taskChartData['total']; ?></div>
                         <div class="text-sm text-gray-500">Tổng nhiệm vụ</div>
                     </div>

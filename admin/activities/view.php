@@ -128,7 +128,7 @@ require_once '../../layouts/admin_header.php';
             <div class="relative" style="height: 300px;">
                 <canvas id="attendanceChart"></canvas>
                 <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                    <div class="text-3xl font-bold text-gray-700">
+                    <div class="text-3xl font-bold text-gray-700"  style="margin-top: -30px;"> 
                         <?php 
                         $total = array_sum($attendanceStats['data']['values']);
                         echo $total;

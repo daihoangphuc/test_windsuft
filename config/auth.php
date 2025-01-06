@@ -12,7 +12,7 @@ class Auth {
     public function login($username, $password) {
         $stmt = $this->db->prepare("
             SELECT * FROM nguoidung
-            WHERE TenDangNhap = ? AND TrangThai = 1
+            WHERE TenDangNhap = ?
         ");
         $stmt->bind_param("s", $username);
         $stmt->execute();
@@ -20,6 +20,14 @@ class Auth {
         
         if ($result->num_rows === 1) {
             $user = $result->fetch_assoc();
+            
+            // Kiểm tra trạng thái tài khoản
+            if ($user['TrangThai'] == 0) {
+                $_SESSION['flash_message'] = 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên!';
+                $_SESSION['flash_type'] = 'error';
+                return false;
+            }
+            
             if (password_verify($password, $user['MatKhauHash'])) {
                 // Cập nhật lần truy cập cuối
                 $updateStmt = $this->db->prepare("UPDATE nguoidung SET lantruycapcuoi = NOW() WHERE Id = ?");
@@ -35,6 +43,37 @@ class Auth {
                 $_SESSION['name'] = $user['HoTen'];
                 return true;
             }
+        }
+        return false;
+    }
+
+    public function loginWithGoogle($email) {
+        $stmt = $this->db->prepare("SELECT * FROM nguoidung WHERE Email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+        
+        if ($user) {
+            // Kiểm tra trạng thái tài khoản
+            if ($user['TrangThai'] == 0) {
+                $_SESSION['flash_message'] = 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên!';
+                $_SESSION['flash_type'] = 'error';
+                return false;
+            }
+            
+            // Cập nhật lần truy cập cuối
+            $updateStmt = $this->db->prepare("UPDATE nguoidung SET lantruycapcuoi = NOW() WHERE Id = ?");
+            $updateStmt->bind_param("i", $user['Id']);
+            $updateStmt->execute();
+            
+            $_SESSION['user_id'] = $user['Id'];
+            $_SESSION['username'] = $user['TenDangNhap'];
+            $_SESSION['role_id'] = $user['VaiTroId'];
+            $_SESSION['position_id'] = $user['ChucVuId'];
+            $_SESSION['email'] = $user['Email'];
+            $_SESSION['avatar'] = $user['anhdaidien'];
+            $_SESSION['name'] = $user['HoTen'];
+            return true;
         }
         return false;
     }

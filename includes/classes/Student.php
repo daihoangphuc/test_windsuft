@@ -90,5 +90,42 @@ class Student {
         $result = $stmt->get_result();
         return $result->fetch_all(MYSQLI_ASSOC);
     }
+
+    public function getStatistics($id) {
+        // Get total posts
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM tintuc WHERE NguoiTaoId = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $posts = $stmt->get_result()->fetch_assoc()['total'];
+
+        // Get total registered activities
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM danhsachdangky WHERE NguoiDungId = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $registeredActivities = $stmt->get_result()->fetch_assoc()['total'];
+
+        // Get total participated activities
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM danhsachthamgia WHERE NguoiDungId = ? AND TrangThai = 1");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $participatedActivities = $stmt->get_result()->fetch_assoc()['total'];
+
+        // Get total ongoing activities
+        $stmt = $this->conn->prepare("
+            SELECT COUNT(DISTINCT hd.Id) as total 
+            FROM hoatdong hd
+            INNER JOIN danhsachdangky dk ON hd.Id = dk.HoatDongId
+            WHERE dk.NguoiDungId = ? AND hd.TrangThai = 1");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $ongoingActivities = $stmt->get_result()->fetch_assoc()['total'];
+
+        return [
+            'posts' => $posts,
+            'registeredActivities' => $registeredActivities,
+            'participatedActivities' => $participatedActivities,
+            'ongoingActivities' => $ongoingActivities
+        ];
+    }
 }
 ?>

@@ -41,7 +41,7 @@ require_once __DIR__ . '/layouts/header.php';
                         <ul class="list-disc list-inside space-y-2 text-gray-600">
                             <li>Truy cập mục "Hoạt động" trên thanh điều hướng</li>
                             <li>Xem thông tin chi tiết về các hoạt động sắp diễn ra</li>
-                            <li>Lọc hoạt động theo thời gian và loại hình</li>
+                            <li>Lọc hoạt động theo thời gian</li>
                         </ul>
                     </div>
                     <div>
@@ -49,7 +49,7 @@ require_once __DIR__ . '/layouts/header.php';
                         <ul class="list-disc list-inside space-y-2 text-gray-600">
                             <li>Click vào hoạt động muốn tham gia</li>
                             <li>Đọc kỹ thông tin và điều kiện tham gia</li>
-                            <li>Nhấn nút "Đăng ký tham gia" và điền form thông tin</li>
+                            <li>Nhấn nút "Đăng ký tham gia"</li>
                         </ul>
                     </div>
                 </div>
@@ -65,14 +65,6 @@ require_once __DIR__ . '/layouts/header.php';
                             <li>Truy cập mục "Nhiệm vụ" trên thanh điều hướng</li>
                             <li>Xem danh sách nhiệm vụ và trạng thái</li>
                             <li>Cập nhật tiến độ thực hiện nhiệm vụ</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-medium text-gray-800 mb-2">Hoàn thành nhiệm vụ</h3>
-                        <ul class="list-disc list-inside space-y-2 text-gray-600">
-                            <li>Click vào nhiệm vụ cần cập nhật</li>
-                            <li>Điền thông tin và tải lên tài liệu liên quan</li>
-                            <li>Đánh dấu hoàn thành và chờ xác nhận</li>
                         </ul>
                     </div>
                 </div>

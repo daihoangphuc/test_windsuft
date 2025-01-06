@@ -315,13 +315,13 @@ require_once '../layouts/header.php';
                         <td class="px-6 py-4">
                             <?php echo htmlspecialchars($activity['DiaDiem']); ?>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <?php 
                             $regDate = new DateTime($activity['ThoiGianDangKy']);
                             echo $regDate->format('d/m/Y H:i'); 
                             ?>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <?php
                             $statusClass = '';
                             switch ($activity['TrangThai']) {
@@ -339,7 +339,7 @@ require_once '../layouts/header.php';
                                 <?php echo htmlspecialchars($activity['TrangThai']); ?>
                             </span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <?php
                             $now = new DateTime();
                             $endTime = new DateTime($activity['NgayKetThuc']);

@@ -140,6 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($stmt->execute()) {
                             $_SESSION['flash_message'] = "Cập nhật ảnh đại diện thành công!";
                             $user['anhdaidien'] = $avatarPath;
+                            $_SESSION['avatar'] = $avatarPath;
                         } else {
                             $_SESSION['flash_error'] = "Lỗi khi cập nhật ảnh đại diện trong CSDL!";
                         }

@@ -223,7 +223,7 @@ require_once __DIR__ . '/../layouts/admin_header.php';
                                 <td class="px-4 py-3 text-sm">
                                     <?php echo $task['NguoiThucHien'] ?? 'Chưa phân công'; ?>
                                 </td>
-                                <td class="px-4 py-3 text-xs">
+                                <td class="px-4 py-3 text-xs whitespace-nowrap">
                                     <?php
                                     $statusClass = '';
                                     switch ($task['TrangThai']) {

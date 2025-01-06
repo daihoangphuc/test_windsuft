@@ -91,7 +91,7 @@ include '../layouts/header.php';
         </div>
 
         <!-- Sidebar - Tin tức liên quan -->
-        <div class="lg:col-span-1">
+        <div class="lg:col-span-1 mt-8">
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-xl font-bold mb-4">Tin tức liên quan</h2>
                 <?php if ($relatedNews): ?>

@@ -16,6 +16,9 @@ if (!$studentInfo) {
     exit;
 }
 
+// Lấy thống kê hoạt động
+$statistics = $student->getStatistics($id);
+
 // Format trạng thái
 $trangThai = $studentInfo['TrangThai'] == 1
     ? '<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Hoạt động</span>'
@@ -39,7 +42,7 @@ $gioiTinh = match ($studentInfo['GioiTinh']) {
         <!-- Thông tin cơ bản -->
         <div class="col-span-1 bg-white rounded-lg shadow p-6">
             <div class="text-center">
-                <img class="w-32 h-32 mb-4 mx-auto rounded-full shadow-lg object-cover" 
+                <img class="w-32 h-32 mb-4 border-4 border-blue-500 mx-auto rounded-full shadow-lg object-cover" 
                      src="<?php echo "../" . $studentInfo['anhdaidien'] ?? DEFAULT_AVATAR; ?>" 
                      alt="<?php echo htmlspecialchars($studentInfo['HoTen']); ?>" />
                 <h2 class="text-xl font-bold text-gray-900"><?php echo htmlspecialchars($studentInfo['HoTen']); ?></h2>
@@ -84,13 +87,12 @@ $gioiTinh = match ($studentInfo['GioiTinh']) {
     <!-- Thống kê hoạt động -->
     <div class="bg-white rounded-lg shadow p-6 mt-6">
         <h3 class="text-lg font-semibold mb-4">Thống kê hoạt động</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             <?php
             $activities = [
-                'Bài viết' => 0,
-                'Bình luận' => 0,
-                'Sự kiện tham gia' => 0,
-                'Hoạt động' => 0,
+                'Tin tức đã đăng' => $statistics['posts'],
+                'Hoạt động đã đăng ký' => $statistics['registeredActivities'],
+                'Hoạt động đã tham gia' => $statistics['participatedActivities']
             ];
 
             foreach ($activities as $activity => $count) {

@@ -127,7 +127,7 @@ require_once __DIR__ . '/layouts/header.php';
         <h2 class="text-3xl font-bold tracking-tight text-[#4a90e2] sm:text-4xl text">Hoạt động sắp diễn ra</h2>
         <p class="mt-2 text-lg leading-8 text-gray-600">Tham gia các hoạt động thú vị cùng CLB HSTV</p>
       </div>
-      <div class="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-t border-[#e3f2fd] pt-10 sm:mt-16 sm:pt-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+      <div class="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16  pt-10 sm:mt-16 sm:pt-16 lg:mx-0 lg:max-w-none lg:grid-cols-3" style="margin-top: -20px">
         <?php foreach ($activities as $activity): ?>
         <div class="flex max-w-xl flex-col items-start justify-between bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
           <div class="flex items-center gap-x-4 text-xs">
@@ -165,7 +165,7 @@ require_once __DIR__ . '/layouts/header.php';
         <p class="mt-2 text-lg leading-8 text-gray-600">Cập nhật những tin tức mới nhất từ CLB HSTV</p>
       </div>
       
-      <div class="mx-auto grid max-w-7xl grid-cols-1 gap-x-8 gap-y-16 border-t border-[#e3f2fd] pt-10 mt-8 sm:mt-16 sm:pt-16 lg:grid-cols-3">
+      <div class="mx-auto grid max-w-7xl grid-cols-1 gap-x-8 gap-y-16  pt-10 sm:mt-16 sm:pt-16 lg:grid-cols-3" style="margin-top: -30px">
         <?php foreach ($news as $item): ?>
             <div class="max-w-sm bg-white border border-[#e3f2fd] rounded-lg shadow-md hover:shadow-lg transition duration-300">
                 <a href="/manage-htsv/news/detail.php?id=<?php echo $item['Id']; ?>">
