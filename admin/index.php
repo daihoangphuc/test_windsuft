@@ -1,56 +1,93 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../config/auth.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/classes/Task.php';
 
-$auth = new Auth();
-$auth->requireAdmin();
+function getTimeAgo($datetime) {
+    $now = new DateTime();
+    $ago = new DateTime($datetime);
+    $diff = $now->diff($ago);
+    
+    if ($diff->y > 0) {
+        return $diff->y . ' năm trước';
+    }
+    if ($diff->m > 0) {
+        return $diff->m . ' tháng trước';
+    }
+    if ($diff->d > 0) {
+        return $diff->d . ' ngày trước';
+    }
+    if ($diff->h > 0) {
+        return $diff->h . ' giờ trước';
+    }
+    if ($diff->i > 0) {
+        return $diff->i . ' phút trước';
+    }
+    return 'vài giây trước';
+}
 
-$db = Database::getInstance()->getConnection();
-$task = new Task();
+try {
+    $db = Database::getInstance()->getConnection();
+    $task = new Task();
 
-// Fetch total members
-$stmt = $db->query("SELECT COUNT(*) as total FROM nguoidung");
-$total_members = $stmt->fetch_assoc()['total'];
+    // Fetch total members
+    $stmt = $db->query("SELECT COUNT(*) as total FROM nguoidung");
+    $total_members = $stmt->fetch_assoc()['total'];
 
-// Fetch total activities
-$stmt = $db->query("SELECT COUNT(*) as total FROM hoatdong");
-$total_activities = $stmt->fetch_assoc()['total'];
+    // Fetch total activities
+    $stmt = $db->query("SELECT COUNT(*) as total FROM hoatdong");
+    $total_activities = $stmt->fetch_assoc()['total'];
 
-// Get task statistics
-$task_stats = $task->getTaskStatistics();
+    // Get task statistics
+    $task_stats = $task->getTaskStatistics();
 
-// Fetch total balance
-$stmt = $db->query("SELECT 
-    (SUM(CASE WHEN LoaiGiaoDich = 0 THEN SoTien ELSE 0 END) - 
-     SUM(CASE WHEN LoaiGiaoDich = 1 THEN SoTien ELSE 0 END)) AS TongSoTien
-FROM 
-    TaiChinh;");
-$total_balance = $stmt->fetch_assoc()['TongSoTien'] ?? 0;
+    // Fetch total balance
+    $stmt = $db->query("SELECT 
+        (SUM(CASE WHEN LoaiGiaoDich = 0 THEN SoTien ELSE 0 END) - 
+         SUM(CASE WHEN LoaiGiaoDich = 1 THEN SoTien ELSE 0 END)) AS TongSoTien
+    FROM 
+        TaiChinh;");
+    $total_balance = $stmt->fetch_assoc()['TongSoTien'] ?? 0;
 
-// Fetch recent activities
-$stmt = $db->query("SELECT * FROM hoatdong ORDER BY NgayTao DESC LIMIT 5");
-$recent_activities = $stmt->fetch_all(MYSQLI_ASSOC);
+    // Fetch recent visitors
+    $stmt = $db->query("SELECT Id, HoTen, lantruycapcuoi, anhdaidien 
+                        FROM nguoidung 
+                        WHERE lantruycapcuoi IS NOT NULL 
+                        ORDER BY lantruycapcuoi DESC 
+                        LIMIT 5");
+    if (!$stmt) {
+        throw new Exception("Query error: " . $db->error);
+    }
+    $recent_visitors = $stmt->fetch_all(MYSQLI_ASSOC);
 
-// Fetch recent tasks with assigned users
-$stmt = $db->query("SELECT nv.*, 
-                           GROUP_CONCAT(nd.HoTen) as NguoiThucHien,
-                           CASE 
-                               WHEN nv.TrangThai = 0 THEN 'Chưa bắt đầu'
-                               WHEN nv.TrangThai = 1 THEN 'Đang thực hiện'
-                               WHEN nv.TrangThai = 2 THEN 'Hoàn thành'
-                               WHEN nv.TrangThai = 3 THEN 'Quá hạn'
-                           END as TrangThaiText
-                    FROM nhiemvu nv 
-                    LEFT JOIN phancongnhiemvu pc ON nv.Id = pc.NhiemVuId 
-                    LEFT JOIN nguoidung nd ON pc.NguoiDungId = nd.Id 
-                    GROUP BY nv.Id 
-                    ORDER BY nv.NgayTao DESC LIMIT 5");
-$recent_tasks = $stmt->fetch_all(MYSQLI_ASSOC);
+    // Fetch recent activities
+    $stmt = $db->query("SELECT * FROM hoatdong ORDER BY NgayTao DESC LIMIT 5");
+    $recent_activities = $stmt->fetch_all(MYSQLI_ASSOC);
 
-$pageTitle = "Dashboard";
-require_once __DIR__ . '/../layouts/admin_header.php';
+    // Fetch recent tasks with assigned users
+    $stmt = $db->query("SELECT nv.*, 
+                               GROUP_CONCAT(nd.HoTen) as NguoiThucHien,
+                               CASE 
+                                   WHEN nv.TrangThai = 0 THEN 'Chưa bắt đầu'
+                                   WHEN nv.TrangThai = 1 THEN 'Đang thực hiện'
+                                   WHEN nv.TrangThai = 2 THEN 'Hoàn thành'
+                                   WHEN nv.TrangThai = 3 THEN 'Quá hạn'
+                               END as TrangThaiText
+                        FROM nhiemvu nv 
+                        LEFT JOIN phancongnhiemvu pc ON nv.Id = pc.NhiemVuId 
+                        LEFT JOIN nguoidung nd ON pc.NguoiDungId = nd.Id 
+                        GROUP BY nv.Id 
+                        ORDER BY nv.NgayTao DESC LIMIT 5");
+    $recent_tasks = $stmt->fetch_all(MYSQLI_ASSOC);
+
+    $pageTitle = "Dashboard";
+    require_once __DIR__ . '/../layouts/admin_header.php';
+} catch (Exception $e) {
+    die("Error: " . $e->getMessage());
+}
 ?>
 
 <div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
@@ -109,7 +146,7 @@ require_once __DIR__ . '/../layouts/admin_header.php';
             </div>
         </div>
     </div>
-    <!-- Thống kê tài chính -->
+    <!-- Thống kê quỹ -->
     <div class="min-w-0 rounded-lg shadow-xs overflow-hidden bg-white">
         <div class="p-4 flex items-center">
             <div class="p-3 rounded-full text-teal-500 bg-teal-100 mr-4">
@@ -126,6 +163,39 @@ require_once __DIR__ . '/../layouts/admin_header.php';
                 </p>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Truy cập gần đây -->
+<div class="min-w-0 p-4 bg-white rounded-lg shadow-xs mb-8">
+    <h4 class="mb-4 font-semibold text-gray-800">
+        Truy cập gần đây
+    </h4>
+    <div class="w-full">
+        <?php foreach ($recent_visitors as $visitor): ?>
+        <div class="border-b border-gray-200 last:border-b-0">
+            <div class="p-4 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="mr-4">
+                        <img class="h-10 w-10 rounded-full object-cover" 
+                             src="<?php echo htmlspecialchars($visitor['anhdaidien']); ?>" 
+                             alt="<?php echo htmlspecialchars($visitor['HoTen']); ?>"
+                             onerror="this.src='../assets/img/avatar.jpg';">
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-700">
+                            <?php echo htmlspecialchars($visitor['HoTen']); ?>
+                        </p>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <?php 
+                    echo getTimeAgo($visitor['lantruycapcuoi']);
+                    ?>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
     </div>
 </div>
 

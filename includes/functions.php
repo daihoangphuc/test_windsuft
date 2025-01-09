@@ -88,3 +88,50 @@ function calculateDistance($lat1, $lon1, $lat2, $lon2) {
     
     return $angle * $earthRadius;
 }
+
+/**
+ * Lấy danh sách hoạt động của người dùng
+ */
+function getActivities($db, $userId, $filters = []) {
+    $query = "SELECT h.*, 
+                     dk.ThoiGianDangKy,
+                     CASE 
+                         WHEN dt.Id IS NOT NULL THEN 'Đã tham gia'
+                         WHEN h.NgayKetThuc < NOW() THEN 'Đã kết thúc'
+                         WHEN h.NgayBatDau <= NOW() AND h.NgayKetThuc >= NOW() THEN 'Đang diễn ra'
+                         ELSE 'Chưa diễn ra'
+                     END as TrangThaiThamGia
+              FROM danhsachdangky dk
+              JOIN hoatdong h ON dk.HoatDongId = h.Id
+              LEFT JOIN danhsachthamgia dt ON dt.HoatDongId = h.Id AND dt.NguoiDungId = dk.NguoiDungId
+              WHERE dk.NguoiDungId = ?";
+
+    // Add filters
+    $params = [$userId];
+    $types = "i";
+
+    if (!empty($filters['status'])) {
+        $query .= " AND h.TrangThai = ?";
+        $params[] = $filters['status'];
+        $types .= "i";
+    }
+
+    if (!empty($filters['search'])) {
+        $searchTerm = "%" . $filters['search'] . "%";
+        $query .= " AND (h.TenHoatDong LIKE ? OR h.DiaDiem LIKE ?)";
+        $params[] = $searchTerm;
+        $params[] = $searchTerm;
+        $types .= "ss";
+    }
+
+    $query .= " ORDER BY h.NgayBatDau DESC";
+
+    $stmt = $db->prepare($query);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    return $result->fetch_all(MYSQLI_ASSOC);
+}
+
+?>

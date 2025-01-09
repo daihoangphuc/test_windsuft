@@ -118,7 +118,7 @@ require_once __DIR__ . '/../layouts/header.php';
             </dl>
         </div>
         
-        <?php if ($taskDetail['TrangThai'] == 0): ?>
+        <!-- <?php if ($taskDetail['TrangThai'] == 0): ?>
         <div class="px-4 py-5 sm:px-6">
             <form action="<?php echo $_SERVER['PHP_SELF'] . '?id=' . $taskId; ?>" method="POST" class="space-y-4">
                 <div>
@@ -135,7 +135,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 </button>
             </form>
         </div>
-        <?php endif; ?>
+        <?php endif; ?> -->
     </div>
     
     <div class="mt-4">

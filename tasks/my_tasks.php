@@ -125,7 +125,7 @@ require_once '../layouts/header.php';
                                 </span>
                             </td>
                             <td class="px-6 py-4">
-                                <?php if ($task['TrangThai'] != 2 && $task['TrangThai'] != 3): ?>
+                                <?php if ($task['TrangThai'] == 1): // Chỉ hiển thị nút Hoàn thành khi đang thực hiện ?>
                                     <form method="POST" class="inline">
                                         <input type="hidden" name="task_id" value="<?php echo $task['Id']; ?>">
                                         <button type="submit" name="complete_task" class="text-green-600 hover:text-green-900">
@@ -133,7 +133,7 @@ require_once '../layouts/header.php';
                                         </button>
                                     </form>
                                 <?php endif; ?>
-                                <a href="view_task.php?id=<?php echo $task['Id']; ?>" class="text-blue-600 hover:text-blue-900">
+                                <a href="view_task.php?id=<?php echo $task['Id']; ?>" class="text-blue-600 hover:text-blue-900 ml-2">
                                     <i class="fas fa-eye"></i> Xem
                                 </a>
                             </td>

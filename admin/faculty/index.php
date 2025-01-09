@@ -1,8 +1,43 @@
 <?php
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../config/auth.php';
+
+$auth = new Auth();
+$auth->requireAdmin();
+
+$db = Database::getInstance()->getConnection();
+
+// Xử lý xóa
+if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
+    $id = (int)$_GET['id'];
+    
+    // Kiểm tra xem có lớp học nào đang sử dụng khoa/trường này không
+    $stmt = $db->prepare("SELECT COUNT(*) as count FROM lophoc WHERE KhoaTruongId = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $count = $result->fetch_assoc()['count'];
+    
+    if ($count > 0) {
+        $_SESSION['flash_error'] = "Không thể xóa Khoa/Trường này vì đang có " . $count . " lớp học thuộc Khoa/Trường này!";
+    } else {
+        // Thực hiện xóa nếu không có ràng buộc
+        $stmt = $db->prepare("DELETE FROM khoatruong WHERE Id = ?");
+        $stmt->bind_param("i", $id);
+        if ($stmt->execute()) {
+            $_SESSION['flash_success'] = "Đã xóa Khoa/Trường thành công!";
+        } else {
+            $_SESSION['flash_error'] = "Có lỗi xảy ra khi xóa Khoa/Trường!";
+        }
+    }
+    header("Location: index.php");
+    exit;
+}
+
 require_once __DIR__ . '/../../layouts/admin_header.php';
 require_once __DIR__ . '/../../includes/classes/Faculty.php';
 
-$faculty = new Faculty($conn);
+$faculty = new Faculty($db);
 $search = $_GET['search'] ?? '';
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 10;
@@ -23,7 +58,7 @@ $totalPages = ceil($totalRecords / $limit);
     <!-- Search and Export -->
     <div class="flex justify-between items-center mb-4">
         <form class="flex items-center">
-            <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Tìm kiếm..." class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4a90e2]">
+            <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Tìm kiếm..." class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] focus:border-[#4a90e2]">
             <button type="submit" class="bg-[#4a90e2] hover:bg-[#357abd] text-white px-4 py-2 rounded-lg ml-2 transition duration-300">
                 <i class="fas fa-search"></i>
             </button>
@@ -35,6 +70,24 @@ $totalPages = ceil($totalRecords / $limit);
 
     <!-- Table -->
     <div class="overflow-x-auto">
+        <?php if (isset($_SESSION['flash_success'])): ?>
+            <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
+                <?php 
+                echo $_SESSION['flash_success'];
+                unset($_SESSION['flash_success']);
+                ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['flash_error'])): ?>
+            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+                <?php 
+                echo $_SESSION['flash_error'];
+                unset($_SESSION['flash_error']);
+                ?>
+            </div>
+        <?php endif; ?>
+
         <table class="w-full text-sm text-left text-gray-500">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
@@ -67,9 +120,11 @@ $totalPages = ceil($totalRecords / $limit);
                         <button onclick="editFaculty(<?php echo $item['Id']; ?>, '<?php echo htmlspecialchars($item['TenKhoaTruong']); ?>')" class="text-blue-600 hover:text-blue-900 mr-3">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="deleteFaculty(<?php echo $item['Id']; ?>)" class="text-red-600 hover:text-red-900">
+                        <a href="?action=delete&id=<?php echo $item['Id']; ?>" 
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa Khoa/Trường này?')" 
+                           class="text-red-600 hover:text-red-900">
                             <i class="fas fa-trash"></i>
-                        </button>
+                        </a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -153,15 +208,8 @@ $totalPages = ceil($totalRecords / $limit);
 function editFaculty(id, tenKhoaTruong) {
     document.getElementById('editId').value = id;
     document.getElementById('editTenKhoaTruong').value = tenKhoaTruong;
-    const editModal = document.getElementById('editModal');
-    const modal = new Modal(editModal);
-    modal.show();
-}
-
-function deleteFaculty(id) {
-    if (confirm('Bạn có chắc chắn muốn xóa khoa/trường này?')) {
-        window.location.href = `process.php?action=delete&id=${id}`;
-    }
+    const modal = document.getElementById('editModal');
+    modal.classList.remove('hidden');
 }
 </script>
 

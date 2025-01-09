@@ -6,6 +6,54 @@ class ClassRoom {
         $this->conn = $db;
     }
 
+    public function getClasses($search = '', $limit = 10, $offset = 0) {
+        $sql = "SELECT l.*, k.TenKhoaTruong 
+                FROM lophoc l 
+                LEFT JOIN khoatruong k ON l.KhoaTruongId = k.Id 
+                WHERE 1=1";
+        
+        if (!empty($search)) {
+            $sql .= " AND (l.TenLop LIKE ? OR k.TenKhoaTruong LIKE ?)";
+        }
+        
+        $sql .= " ORDER BY l.Id DESC LIMIT ? OFFSET ?";
+
+        $stmt = $this->conn->prepare($sql);
+        
+        if (!empty($search)) {
+            $searchParam = "%$search%";
+            $stmt->bind_param("ssii", $searchParam, $searchParam, $limit, $offset);
+        } else {
+            $stmt->bind_param("ii", $limit, $offset);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getTotalClasses($search = '') {
+        $sql = "SELECT COUNT(*) as total 
+                FROM lophoc l 
+                LEFT JOIN khoatruong k ON l.KhoaTruongId = k.Id 
+                WHERE 1=1";
+                
+        if (!empty($search)) {
+            $sql .= " AND (l.TenLop LIKE ? OR k.TenKhoaTruong LIKE ?)";
+        }
+
+        $stmt = $this->conn->prepare($sql);
+        
+        if (!empty($search)) {
+            $searchParam = "%$search%";
+            $stmt->bind_param("ss", $searchParam, $searchParam);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc()['total'];
+    }
+
     public function getAll($page = 1, $limit = 10, $search = '', $facultyId = null) {
         $offset = ($page - 1) * $limit;
         
@@ -104,55 +152,53 @@ class ClassRoom {
     public function create($tenLop, $khoaTruongId) {
         // Kiểm tra tên lớp trùng
         if ($this->checkDuplicateName($tenLop)) {
-            $_SESSION['error'] = "Tên lớp '$tenLop' đã tồn tại!";
-            return false;
+            return ['success' => false, 'message' => 'Tên lớp đã tồn tại'];
         }
 
         $stmt = $this->conn->prepare("INSERT INTO lophoc (TenLop, KhoaTruongId) VALUES (?, ?)");
         $stmt->bind_param("si", $tenLop, $khoaTruongId);
-        $success = $stmt->execute();
         
-        if ($success) {
-            $_SESSION['success'] = "Thêm lớp thành công!";
+        if ($stmt->execute()) {
+            return ['success' => true, 'message' => 'Thêm lớp học thành công'];
         } else {
-            $_SESSION['error'] = "Có lỗi xảy ra khi thêm lớp!";
+            return ['success' => false, 'message' => 'Có lỗi xảy ra khi thêm lớp học'];
         }
-        
-        return $success;
     }
 
     public function update($id, $tenLop, $khoaTruongId) {
-        // Kiểm tra tên lớp trùng, loại trừ ID hiện tại
+        // Kiểm tra tên lớp trùng
         if ($this->checkDuplicateName($tenLop, $id)) {
-            $_SESSION['error'] = "Tên lớp '$tenLop' đã tồn tại!";
-            return false;
+            return ['success' => false, 'message' => 'Tên lớp đã tồn tại'];
         }
 
         $stmt = $this->conn->prepare("UPDATE lophoc SET TenLop = ?, KhoaTruongId = ? WHERE Id = ?");
         $stmt->bind_param("sii", $tenLop, $khoaTruongId, $id);
-        $success = $stmt->execute();
         
-        if ($success) {
-            $_SESSION['success'] = "Cập nhật lớp thành công!";
+        if ($stmt->execute()) {
+            return ['success' => true, 'message' => 'Cập nhật lớp học thành công'];
         } else {
-            $_SESSION['error'] = "Có lỗi xảy ra khi cập nhật lớp!";
+            return ['success' => false, 'message' => 'Có lỗi xảy ra khi cập nhật lớp học'];
         }
-        
-        return $success;
     }
 
     public function delete($id) {
         $stmt = $this->conn->prepare("DELETE FROM lophoc WHERE Id = ?");
         $stmt->bind_param("i", $id);
-        return $stmt->execute();
+        
+        if ($stmt->execute()) {
+            return ['success' => true, 'message' => 'Xóa lớp học thành công'];
+        } else {
+            return ['success' => false, 'message' => 'Có lỗi xảy ra khi xóa lớp học'];
+        }
     }
 
     public function getStatsByFaculty() {
-        $sql = "SELECT k.TenKhoaTruong, COUNT(l.Id) as SoLop
+        $sql = "SELECT k.Id, k.TenKhoaTruong, COUNT(l.Id) as SoLop
                 FROM khoatruong k
                 LEFT JOIN lophoc l ON k.Id = l.KhoaTruongId
                 GROUP BY k.Id, k.TenKhoaTruong
-                ORDER BY SoLop DESC";
+                ORDER BY k.TenKhoaTruong";
+        
         $result = $this->conn->query($sql);
         return $result->fetch_all(MYSQLI_ASSOC);
     }

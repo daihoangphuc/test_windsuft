@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Xử lý upload ảnh đại diện
     $avatar = $user['anhdaidien']; // Giữ nguyên ảnh cũ nếu không upload mới
     if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = '../../uploads/avatars/';
+        $uploadDir = '../../uploads/users/';
         if (!file_exists($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $uploadFile = $uploadDir . $fileName;
 
         if (move_uploaded_file($_FILES['avatar']['tmp_name'], $uploadFile)) {
-            $avatar = 'uploads/avatars/' . $fileName;
+            $avatar = '../uploads/users/' . $fileName;
             // Xóa ảnh cũ nếu có
             if (!empty($user['anhdaidien']) && file_exists('../../' . $user['anhdaidien'])) {
                 unlink('../../' . $user['anhdaidien']);
