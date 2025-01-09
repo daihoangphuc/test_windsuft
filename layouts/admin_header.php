@@ -55,9 +55,10 @@ $auth->requireAdmin();
                             <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
                         </svg>
                     </button>
-                    <a href="/manage-htsv/admin" class="flex ml-2 md:mr-24">
-                        <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">Admin Panel</span>
-                    </a>
+            <!-- Logo -->
+            <a href="<?php echo BASE_URL; ?>/admin" class="flex items-center space-x-3 rtl:space-x-reverse">
+                <img src="<?php echo BASE_URL; ?>/assets/logo/logo-clb.png" class="h-8 mr-3" alt="CLB HSTV Logo">
+            </a>
                 </div>
                 <div class="flex items-center">
                     <div class="flex items-center ml-3">
@@ -148,17 +149,18 @@ $auth->requireAdmin();
                 </li>
                 <li>
                     <a href="/manage-htsv/admin/finance" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
-                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm0 17a7.5 7.5 0 1 1 7.5-7.5 7.509 7.509 0 0 1-7.5 7.5Zm2.5-10.5h-5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1Zm-1 5h-3v-3h3v3Z"/>
+                        <!-- SVG biểu tượng tiền -->
+                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                            <path d="M10 1a1 1 0 0 1 1 1v1.18a4.02 4.02 0 0 1 2.83 1.63A1 1 0 1 1 12.35 6.1 2.02 2.02 0 0 0 10 5H9a2 2 0 0 0 0 4h2a4 4 0 1 1 0 8v1a1 1 0 0 1-2 0v-1.18a4.02 4.02 0 0 1-2.83-1.63 1 1 0 0 1 1.48-1.27A2.02 2.02 0 0 0 10 15h1a2 2 0 0 0 0-4H9a4 4 0 1 1 0-8V2a1 1 0 0 1 1-1Z"/>
                         </svg>
                         <span class="flex-1 ml-3 whitespace-nowrap">Quản lý tài chính</span>
                     </a>
                 </li>
+
                 <li>
                     <a href="/manage-htsv/admin/reports" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
-                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"/>
-                        </path>
+                    <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M2 10a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-7Zm6-6a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1V4Zm6 8a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1v-5Z"/>
                     </svg>
                     <span class="flex-1 ml-3 whitespace-nowrap">Báo cáo & Thống kê</span>
                 </a>

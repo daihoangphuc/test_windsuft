@@ -170,44 +170,47 @@ $taskAssignmentData = get_task_assignment_data($conn);
 require_once __DIR__ . '/../../layouts/admin_header.php';
 ?>
 
+<div class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5">
+    <div class="mb-1 w-full">
+        <div class="mb-4">
+            <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Báo cáo thống kê</h1>
+        </div>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <form id="filterForm" class="flex items-center gap-4">
+                    <div>
+                        <label for="startDate" class="block mb-2 text-sm font-medium text-gray-900">Từ ngày</label>
+                        <input type="date" id="startDate" name="startDate" value="<?php echo $startDate; ?>"
+                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    </div>
+                    <div>
+                        <label for="endDate" class="block mb-2 text-sm font-medium text-gray-900">Đến ngày</label>
+                        <input type="date" id="endDate" name="endDate" value="<?php echo $endDate; ?>"
+                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit"
+                                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                            Lọc
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="export.php?startDate=<?php echo $startDate; ?>&endDate=<?php echo $endDate; ?>" 
+                   class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg focus:ring-4 focus:ring-green-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Xuất báo cáo Excel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="p-4">
     <div class="mb-6">
-        <!-- <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold text-gray-900">Báo cáo thống kê</h2>
-            <div class="flex items-center gap-4">
-                <button onclick="exportReport()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded inline-flex items-center">
-                    <i class="fas fa-file-excel mr-2"></i>
-                    Xuất báo cáo
-                </button>
-            </div>
-        </div> -->
-
-        <!-- Filter Form -->
-        <form id="filterForm" class="bg-white shadow-md rounded-lg p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Từ ngày
-                    </label>
-                    <input type="date" name="startDate" value="<?php echo $startDate; ?>"
-                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Đến ngày
-                    </label>
-                    <input type="date" name="endDate" value="<?php echo $endDate; ?>"
-                           class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded">
-                        <i class="fas fa-filter mr-2"></i>
-                        Lọc
-                    </button>
-                </div>
-            </div>
-        </form>
-
         <!-- Statistics Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <!-- Member Statistics -->

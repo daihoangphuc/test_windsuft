@@ -166,7 +166,7 @@ $pageTitle = "Thông tin cá nhân";
 require_once 'layouts/header.php';
 ?>
 
-<div class="container mx-auto py-8 px-4 lg:px-8">
+<div class="container mx-auto py-8 lg:px-8">
     <!-- Flash Message -->
     <?php if (isset($_SESSION['flash_message']) || isset($_SESSION['flash_error'])): ?>
     <div id="flashMessage" class="mb-4 px-4">

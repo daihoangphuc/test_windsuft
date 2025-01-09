@@ -188,6 +188,7 @@ $mainQuery = "
             ELSE 'Đã đăng ký'
         END as TrangThai,
         h.TrangThai as HoatDongTrangThai,
+        h.DuongDanMinhChung,
         CASE 
             WHEN dt.Id IS NOT NULL THEN dt.TrangThai
             WHEN h.NgayKetThuc < DATE_SUB(NOW(), INTERVAL 1 DAY) THEN 0
@@ -353,10 +354,22 @@ require_once '../layouts/header.php';
                                     Điểm danh
                                 </button>
                             <?php else: ?>
-                                <a href="view.php?id=<?php echo $activity['Id']; ?>" 
-                                   class="text-blue-600 hover:underline">
-                                    Xem chi tiết
-                                </a>
+                                <div class="flex items-center gap-2">
+                                    <a href="view.php?id=<?php echo $activity['Id']; ?>" 
+                                       class="text-blue-600 hover:underline">
+                                        Xem chi tiết
+                                    </a>
+                                    <?php if ($activity['HoatDongTrangThai'] == 2 && !empty($activity['DuongDanMinhChung'])): ?>
+                                        <a href="/manage-htsv/uploads/activities/minhchung/<?php echo basename($activity['DuongDanMinhChung']); ?>" 
+                                           download
+                                           class="inline-flex items-center text-green-600 hover:underline">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            Tải minh chứng
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -435,7 +448,7 @@ function submitAttendance(activityId) {
                     message += 'Không thể lấy được vị trí';
                     break;
                 case error.TIMEOUT:
-                    message += 'Hết thời gian chờ lấy vị trí';
+                    message += 'Hết thởi gian chờ lấy vị trí';
                     break;
                 default:
                     message += 'Lỗi không xác định';

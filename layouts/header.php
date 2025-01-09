@@ -124,8 +124,41 @@ $auth = new Auth();
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
             <!-- Logo -->
             <a href="<?php echo BASE_URL; ?>/" class="flex items-center space-x-3 rtl:space-x-reverse">
-                <img src="<?php echo BASE_URL; ?>/assets/logo/logo-clb.png" class="h-8 mr-3" alt="CLB HSTV Logo">
+                <img src="<?php echo BASE_URL; ?>/assets/logo/logo-clb.png" class="h-8" alt="CLB HSTV Logo">
             </a>
+
+            <!-- Center Avatar for Mobile -->
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <div class="flex md:hidden items-center justify-end flex-1 mr-2">
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" 
+                                class="flex text-sm border-2 border-[#4a90e2] rounded-full focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition duration-300">
+                            <img class="h-8 w-8 rounded-full object-cover" 
+                                 src="<?php echo str_replace('../', BASE_URL . '/', $_SESSION['avatar']); ?>" 
+                                 alt="Avatar">
+                        </button>
+                        <div x-show="open" 
+                             @click.away="open = false"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50"
+                             style="display: none;">
+                            <a href="<?php echo base_url('/profile.php'); ?>" 
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                Hồ sơ
+                            </a>
+                            <a href="<?php echo base_url('/logout.php'); ?>" 
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                Đăng xuất
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <!-- Mobile menu button -->
             <button data-collapse-toggle="navbar-default" type="button" 
@@ -152,7 +185,16 @@ $auth = new Auth();
                         </li>
                         <?php if (isset($_SESSION['user_id'])): ?>
                             <li>
-                                <a href="<?php echo BASE_URL; ?>/activities" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Hoạt động</a>
+                                <a href="<?php echo BASE_URL; ?>/activities"
+                                   class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                                    <span class="ml-3">Hoạt động</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo BASE_URL; ?>/documents"
+                                   class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
+                                    <span class="ml-3">Tra cứu tài liệu</span>
+                                </a>
                             </li>
                             <li>
                                 <a href="<?php echo BASE_URL; ?>/activities/my_activities.php" class="block py-2 px-3 text-gray-700 hover:text-[#4a90e2] rounded-md">Hoạt động của tôi</a>

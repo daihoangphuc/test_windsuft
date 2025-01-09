@@ -48,13 +48,13 @@ require_once __DIR__ . '/layouts/header.php';
                 <div class="marquee-content">
                     <?php foreach ($activities as $activity): ?>
                         <span class="mx-4">
-                            📅 <?php echo htmlspecialchars($activity['TenHoatDong']); ?> 
+                            <?php echo htmlspecialchars($activity['TenHoatDong']); ?> 
                             (<?php echo date('d/m/Y', strtotime($activity['NgayBatDau'])); ?>)
                         </span>
                     <?php endforeach; ?>
                     <?php foreach ($news as $item): ?>
                         <span class="mx-4">
-                            📰 <?php echo htmlspecialchars($item['TieuDe']); ?>
+                            <?php echo htmlspecialchars($item['TieuDe']); ?>
                         </span>
                     <?php endforeach; ?>
                 </div>
@@ -158,6 +158,7 @@ require_once __DIR__ . '/layouts/header.php';
     </div>
     <?php endif; ?>
 
+
     <?php if (!empty($news)): ?>
     <div class="mx-auto max-w-7xl px-6 lg:px-8 mt-16">
       <div class="mx-auto max-w-2xl lg:mx-0">
@@ -202,18 +203,22 @@ require_once __DIR__ . '/layouts/header.php';
       <div class="swiper-wrapper">
         <?php foreach ($leaders as $leader): ?>
         <div class="swiper-slide">
-          <div class="bg-white rounded-lg overflow-hidden">
-            <div class="flex justify-center mt-4">
-              <div class="w-48 h-48 rounded-full border-4 border-blue-200 overflow-hidden">
-                <img src="<?php echo str_replace('../', BASE_URL . '/', $leader['anhdaidien']); ?>" 
-                     alt="<?php echo htmlspecialchars($leader['HoTen']); ?>" 
-                     class="w-full h-full object-cover">
+          <div class="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <a href="management-profile.php?id=<?php echo $leader['Id']; ?>" class="block">
+              <div class="flex justify-center mt-4">
+                <div class="w-48 h-48 rounded-full border-4 border-blue-200 overflow-hidden">
+                  <img src="<?php echo str_replace('../', BASE_URL . '/', $leader['anhdaidien']); ?>" 
+                       alt="<?php echo htmlspecialchars($leader['HoTen']); ?>" 
+                       class="w-full h-full object-cover">
+                </div>
               </div>
-            </div>
-            <div class="p-4 text-center">
-              <h3 class="text-lg font-semibold text-gray-900"><?php echo htmlspecialchars($leader['HoTen']); ?></h3>
-              <p class="text-sm text-indigo-600"><?php echo htmlspecialchars($leader['TenChucVu']); ?></p>
-            </div>
+              <div class="p-4 text-center">
+                <h3 class="text-lg font-semibold text-gray-900 hover:text-[#4a90e2]">
+                  <?php echo htmlspecialchars($leader['HoTen']); ?>
+                </h3>
+                <p class="text-sm text-indigo-600"><?php echo htmlspecialchars($leader['TenChucVu']); ?></p>
+              </div>
+            </a>
           </div>
         </div>
         <?php endforeach; ?>

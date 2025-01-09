@@ -164,7 +164,7 @@ require_once __DIR__ . '/../layouts/admin_header.php';
                                     $statusClass = '';
                                     switch ($activity['TrangThai']) {
                                         case 0:
-                                            $statusClass = 'text-orange-700 bg-orange-100';
+                                            $statusClass = 'text-blue-700 bg-blue-100';
                                             $statusText = 'Sắp diễn ra';
                                             break;
                                         case 1:
