@@ -178,12 +178,12 @@ $totalPages = ceil($totalRecords / $limit);
 </div>
 
 <!-- Edit Modal -->
-<div id="editModal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+<div id="editModal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full flex items-center justify-center">
     <div class="relative w-full max-w-md max-h-full">
         <div class="relative bg-white rounded-lg shadow">
             <div class="flex items-start justify-between p-4 border-b rounded-t">
                 <h3 class="text-xl font-semibold text-gray-900">Chỉnh sửa Khoa/Trường</h3>
-                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center" data-modal-hide="editModal">
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center" onclick="closeEditModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -197,7 +197,7 @@ $totalPages = ceil($totalRecords / $limit);
                 </div>
                 <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
                     <button type="submit" name="action" value="update" class="text-white bg-[#4a90e2] hover:bg-[#357abd] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Cập nhật</button>
-                    <button type="button" data-modal-hide="editModal" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">Hủy</button>
+                    <button type="button" onclick="closeEditModal()" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">Hủy</button>
                 </div>
             </form>
         </div>
@@ -211,6 +211,20 @@ function editFaculty(id, tenKhoaTruong) {
     const modal = document.getElementById('editModal');
     modal.classList.remove('hidden');
 }
+
+function closeEditModal() {
+    const modal = document.getElementById('editModal');
+    modal.classList.add('hidden');
+}
+
+// Đóng modal khi click ra ngoài
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('editModal');
+    const modalContent = modal.querySelector('.relative.bg-white');
+    if (event.target === modal) {
+        closeEditModal();
+    }
+});
 </script>
 
 <?php require_once __DIR__ . '/../../layouts/admin_footer.php'; ?>

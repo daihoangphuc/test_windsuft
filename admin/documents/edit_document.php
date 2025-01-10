@@ -45,16 +45,37 @@ try {
     }
 
     // Handle file upload if a new file is provided
-    $filePath = $document['DuongDan'];
+    $filePath = $document['DuongDan']; // Keep existing file path by default
     if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
-        // Delete old file if it exists
-        if ($document['FileDinhKem']) {
-            delete_file('../../uploads/documents/' . $document['FileDinhKem']);
+        $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+        $file_type = $_FILES['file']['type'];
+        
+        if (!in_array($file_type, $allowed_types)) {
+            throw new Exception('Loại file không được hỗ trợ. Chỉ chấp nhận PDF, DOC, DOCX, XLS, XLSX');
         }
-
-        // Upload new file
-        $uploadedFile = upload_file($_FILES['file'], '../../uploads/documents/');
-        $filePath = $uploadedFile;
+        
+        if ($_FILES['file']['size'] > 10 * 1024 * 1024) { // 10MB limit
+            throw new Exception('File không được vượt quá 10MB');
+        }
+        
+        $upload_dir = '../../uploads/documents/';
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        
+        $file_extension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+        $new_filename = uniqid() . '_' . time() . '.' . $file_extension;
+        $upload_path = $upload_dir . $new_filename;
+        
+        if (move_uploaded_file($_FILES['file']['tmp_name'], $upload_path)) {
+            // Delete old file if it exists and is different from the new file
+            if (!empty($document['DuongDan']) && file_exists($document['DuongDan']) && $document['DuongDan'] !== $upload_path) {
+                unlink($document['DuongDan']);
+            }
+            $filePath = $upload_path;
+        } else {
+            throw new Exception('Không thể tải file lên');
+        }
     }
 
     // Update document
@@ -67,10 +88,9 @@ try {
 
     $stmt = $conn->prepare($updateQuery);
     $stmt->bind_param("ssssi", $title, $description, $documentType, $filePath, $documentId);
-    $stmt->execute();
-
-    if ($stmt->affected_rows === 0) {
-        throw new Exception('Không có thay đổi nào được cập nhật');
+    
+    if (!$stmt->execute()) {
+        throw new Exception('Lỗi khi cập nhật tài liệu: ' . $stmt->error);
     }
 
     // Log the activity

@@ -79,10 +79,39 @@ class Activity {
     }
 
     public function delete($id) {
-        $query = "DELETE FROM hoatdong WHERE Id = ?";
-        $stmt = $this->db->prepare($query);
+        // Kiểm tra xem có người đăng ký hoặc tham gia không
+        $stmt = $this->db->prepare("SELECT 
+            (SELECT COUNT(*) FROM danhsachdangky WHERE HoatDongId = ?) as total_registrations,
+            (SELECT COUNT(*) FROM danhsachthamgia WHERE HoatDongId = ?) as total_participants");
+        $stmt->bind_param("ii", $id, $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $counts = $result->fetch_assoc();
+        
+        if ($counts['total_registrations'] > 0 || $counts['total_participants'] > 0) {
+            return [
+                'success' => false,
+                'message' => "Không thể xóa hoạt động này vì đã có " . 
+                            $counts['total_registrations'] . " người đăng ký và " . 
+                            $counts['total_participants'] . " người tham gia!"
+            ];
+        }
+
+        // Nếu không có ràng buộc, tiến hành xóa
+        $stmt = $this->db->prepare("DELETE FROM hoatdong WHERE Id = ?");
         $stmt->bind_param("i", $id);
-        return $stmt->execute();
+        
+        if ($stmt->execute()) {
+            return [
+                'success' => true,
+                'message' => 'Xóa hoạt động thành công!'
+            ];
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi xóa hoạt động!'
+            ];
+        }
     }
 
     public function get($id) {

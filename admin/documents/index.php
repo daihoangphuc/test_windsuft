@@ -203,7 +203,7 @@ $pagination = new Pagination($total_documents, $limit);
             <!-- Modal header -->
             <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
                 <h3 class="text-xl font-semibold text-gray-900">
-                    Sửa tài liệu
+                    Chỉnh sửa tài liệu
                 </h3>
                 <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center" data-modal-hide="editDocumentModal">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
@@ -213,7 +213,7 @@ $pagination = new Pagination($total_documents, $limit);
                 </button>
             </div>
             <!-- Modal body -->
-            <form id="editDocumentForm" class="p-4 md:p-5" enctype="multipart/form-data">
+            <form id="editDocumentForm" action="edit_document.php" method="POST" enctype="multipart/form-data" class="p-4 md:p-5">
                 <input type="hidden" name="documentId" id="editDocumentId">
                 <div class="grid gap-4 mb-4">
                     <div class="col-span-2">
@@ -237,14 +237,14 @@ $pagination = new Pagination($total_documents, $limit);
                     <div class="col-span-2">
                         <label for="editFile" class="block mb-2 text-sm font-medium text-gray-900">File đính kèm mới (không bắt buộc)</label>
                         <input type="file" name="file" id="editFile" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
-                        <p class="mt-1 text-sm text-gray-500">Chấp nhận các file: PDF, DOC, DOCX, XLS, XLSX (Tối đa 10MB)</p>
+                        <p class="mt-1 text-sm text-gray-500">Để trống nếu không muốn thay đổi file</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <button type="submit" class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
                         Cập nhật
                     </button>
-                    <button type="button" data-modal-hide="editDocumentModal" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
+                    <button type="button" data-modal-hide="editDocumentModal" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
                         Hủy
                     </button>
                 </div>
@@ -319,27 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
         editDocumentForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Validate form
-            const title = this.querySelector('#editTitle').value.trim();
-            const description = this.querySelector('#editDescription').value.trim();
-            const documentType = this.querySelector('#editDocumentType').value;
-            
-            if (!title || !description || !documentType) {
-                alert('Vui lòng điền đầy đủ thông tin');
-                return;
-            }
-            
             const formData = new FormData(this);
-            
-            // Disable submit button and show loading state
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                 </svg>
-                                 Đang xử lý...`;
             
             try {
                 const response = await fetch('edit_document.php', {
@@ -347,12 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: formData
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
                 const data = await response.json();
-                console.log('Server response:', data);
                 
                 if (data.success) {
                     window.location.reload();
@@ -362,70 +337,58 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error:', error);
                 alert(error.message || 'Có lỗi xảy ra khi gửi yêu cầu');
-            } finally {
-                // Restore button state
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
             }
         });
     }
 
-    // Delete Document
-    window.deleteDocument = async function(documentId) {
-        if (confirm('Bạn có chắc chắn muốn xóa tài liệu này?')) {
-            try {
-                const response = await fetch('delete_document.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ documentId: documentId })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const data = await response.json();
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    throw new Error(data.message || 'Có lỗi xảy ra khi xóa tài liệu');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert(error.message || 'Có lỗi xảy ra khi xóa tài liệu');
-            }
-        }
-    };
-
-    // Load document data for editing
+    // Handle edit button clicks
     const editButtons = document.querySelectorAll('[data-modal-target="editDocumentModal"]');
     editButtons.forEach(button => {
-        button.addEventListener('click', async function() {
-            const documentId = this.getAttribute('data-document-id');
-            try {
-                const response = await fetch(`get_document.php?id=${documentId}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('editDocumentId').value = data.document.Id;
-                    document.getElementById('editTitle').value = data.document.TenTaiLieu;
-                    document.getElementById('editDescription').value = data.document.MoTa;
-                    document.getElementById('editDocumentType').value = data.document.LoaiTaiLieu;
-                } else {
-                    throw new Error(data.message || 'Không thể tải thông tin tài liệu');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert(error.message || 'Có lỗi xảy ra khi tải thông tin tài liệu');
-            }
+        button.addEventListener('click', function() {
+            const documentId = this.dataset.documentId;
+            const documentTitle = this.closest('.max-w-sm').querySelector('h5').textContent.trim();
+            const documentDescription = this.closest('.max-w-sm').querySelector('p').textContent.trim();
+            const documentType = this.closest('.max-w-sm').querySelector('span:first-of-type').textContent.replace('Loại: ', '').trim();
+            
+            document.getElementById('editDocumentId').value = documentId;
+            document.getElementById('editTitle').value = documentTitle;
+            document.getElementById('editDescription').value = documentDescription;
+            document.getElementById('editDocumentType').value = documentType;
+            
+            // Show modal
+            document.getElementById('editDocumentModal').classList.remove('hidden');
         });
     });
 });
+
+// Delete Document
+window.deleteDocument = async function(documentId) {
+    if (confirm('Bạn có chắc chắn muốn xóa tài liệu này?')) {
+        try {
+            const response = await fetch('delete_document.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ documentId: documentId })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                throw new Error(data.message || 'Có lỗi xảy ra khi xóa tài liệu');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message || 'Có lỗi xảy ra khi xóa tài liệu');
+        }
+    }
+};
 </script>
 
 <?php require_once __DIR__ . '/../../layouts/admin_footer.php'; ?>

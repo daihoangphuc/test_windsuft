@@ -55,7 +55,7 @@ $auth = new Auth();
         }
     </style>
 </head>
-<body class="bg-[#f8f9fa]">
+<body class="bg-white">
     <!-- Flash Notification Container -->
     <div id="flashNotification" class="flash-notification">
         <div class="flex justify-between items-start">

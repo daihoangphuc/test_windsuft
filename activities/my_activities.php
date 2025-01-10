@@ -119,7 +119,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
 
 // Xử lý phân trang và filter
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit = 10;
+$limit = 5; // Thay đổi limit thành 5
 $offset = ($page - 1) * $limit;
 
 $search = $_GET['search'] ?? '';

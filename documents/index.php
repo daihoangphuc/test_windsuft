@@ -53,7 +53,7 @@ $stmt->execute();
 $total = $stmt->get_result()->fetch_assoc()['total'];
 
 // Phân trang
-$limit = 10;
+$limit = 5; // Changed from 10 to 5 items per page
 $totalPages = ceil($total / $limit);
 $page = isset($_GET['page']) ? max(1, min($totalPages, intval($_GET['page']))) : 1;
 $offset = ($page - 1) * $limit;

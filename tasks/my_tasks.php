@@ -10,8 +10,15 @@ $task = new Task();
 // Update overdue tasks automatically
 $task->updateOverdueTasks();
 
-// Get user's tasks
-$tasks = $task->getMyTasks($_SESSION['user_id']);
+// Get user's tasks with pagination
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$limit = 5;
+$offset = ($page - 1) * $limit;
+
+$tasks = $task->getMyTasks($_SESSION['user_id'], $limit, $offset);
+$totalTasks = $task->countMyTasks($_SESSION['user_id']);
+$totalPages = ceil($totalTasks / $limit);
+
 $stats = $task->getTaskStatistics($_SESSION['user_id']);
 
 // Handle task completion
@@ -148,6 +155,72 @@ require_once '../layouts/header.php';
                 <?php endif; ?>
             </tbody>
         </table>
+
+        <!-- Pagination -->
+        <?php if ($totalPages > 1): ?>
+        <div class="px-4 py-3 flex items-center justify-between border-t border-gray-200">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <?php if ($page > 1): ?>
+                    <a href="?page=<?php echo $page - 1; ?>" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Trước
+                    </a>
+                <?php endif; ?>
+                <?php if ($page < $totalPages): ?>
+                    <a href="?page=<?php echo $page + 1; ?>" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Sau
+                    </a>
+                <?php endif; ?>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Hiển thị
+                        <span class="font-medium"><?php echo ($offset + 1); ?></span>
+                        đến
+                        <span class="font-medium"><?php echo min($offset + $limit, $totalTasks); ?></span>
+                        trong số
+                        <span class="font-medium"><?php echo $totalTasks; ?></span>
+                        kết quả
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <?php if ($page > 1): ?>
+                            <a href="?page=1" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Đầu tiên</span>
+                                <span>««</span>
+                            </a>
+                            <a href="?page=<?php echo $page - 1; ?>" class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Trước</span>
+                                <span>«</span>
+                            </a>
+                        <?php endif; ?>
+                        
+                        <?php
+                        $start = max(1, $page - 2);
+                        $end = min($totalPages, $page + 2);
+                        for ($i = $start; $i <= $end; $i++):
+                        ?>
+                            <a href="?page=<?php echo $i; ?>" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium <?php echo ($i === $page) ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'; ?>">
+                                <?php echo $i; ?>
+                            </a>
+                        <?php endfor; ?>
+
+                        <?php if ($page < $totalPages): ?>
+                            <a href="?page=<?php echo $page + 1; ?>" class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Sau</span>
+                                <span>»</span>
+                            </a>
+                            <a href="?page=<?php echo $totalPages; ?>" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Cuối cùng</span>
+                                <span>»»</span>
+                            </a>
+                        <?php endif; ?>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

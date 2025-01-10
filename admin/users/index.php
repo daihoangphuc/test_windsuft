@@ -25,98 +25,56 @@ $pageTitle = 'Quản lý người dùng';
 require_once __DIR__ . '/../../layouts/admin_header.php';
 ?>
 
-<!-- Modal thêm người dùng -->
-<div id="addUserModal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-    <div class="relative w-full max-w-2xl max-h-full">
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    Thêm người dùng mới
-                </h3>
-                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="addUserModal">
-                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                    </svg>
-                    <span class="sr-only">Đóng</span>
-                </button>
-            </div>
-            <form id="addUserForm" action="add.php" method="POST">
-                <div class="p-6 space-y-6">
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tên đăng nhập</label>
-                            <input type="text" name="username" id="username" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
-                        </div>
-                        <div>
-                            <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
-                            <input type="email" name="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
-                        </div>
-                        <div>
-                            <label for="fullname" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Họ và tên</label>
-                            <input type="text" name="fullname" id="fullname" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
-                        </div>
-                        <div>
-                            <label for="student_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mã sinh viên</label>
-                            <input type="text" name="student_id" id="student_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                        </div>
-                        <div>
-                            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mật khẩu</label>
-                            <input type="password" name="password" id="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
-                        </div>
-                        <div>
-                            <label for="role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Vai trò</label>
-                            <select name="role" id="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
-                                <option value="2">Thành viên</option>
-                                <option value="1">Admin</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="class_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Lớp</label>
-                            <select name="class_id" id="class_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                <option value="">Chọn lớp</option>
-                                <?php foreach ($classes as $class): ?>
-                                    <option value="<?php echo $class['Id']; ?>">
-                                        <?php echo htmlspecialchars($class['TenLop'] . ' - ' . $class['TenKhoaTruong']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
-                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Thêm</button>
-                    <button data-modal-hide="addUserModal" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Hủy</button>
-                </div>
-            </form>
+<div class="p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Quản lý người dùng</h1>
+        <div class="flex gap-4">
+            <button data-modal-target="importUserModal" data-modal-toggle="importUserModal" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Import Excel
+            </button>
+            <button data-modal-target="addUserModal" data-modal-toggle="addUserModal" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Thêm mới
+            </button>
         </div>
     </div>
-</div>
 
-<div class="p-4">
-    <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold">Quản lý người dùng</h2>
-        <button data-modal-target="addUserModal" data-modal-toggle="addUserModal" class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">
-            Thêm người dùng
-        </button>
-    </div>
-
-    <!-- Thanh tìm kiếm -->
-    <div class="mb-4">
-        <form class="flex items-center">   
-            <label for="simple-search" class="sr-only">Search</label>
-            <div class="relative w-full">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                    </svg>
-                </div>
-                <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5" placeholder="Tìm kiếm theo tên, email, mã sinh viên...">
-            </div>
-            <button type="submit" class="p-2.5 ml-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
-                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+    <!-- Hiển thị thông báo -->
+    <?php if (isset($_SESSION['flash_error'])): ?>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong class="font-bold">Lỗi!</strong>
+            <span class="block sm:inline"><?php echo $_SESSION['flash_error']; ?></span>
+            <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                <svg class="fill-current h-6 w-6 text-red-500" role="button" onclick="this.parentElement.parentElement.remove()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <title>Đóng</title>
+                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
                 </svg>
-                <span class="sr-only">Search</span>
+            </span>
+        </div>
+        <?php unset($_SESSION['flash_error']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['flash_message'])): ?>
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong class="font-bold">Thành công!</strong>
+            <span class="block sm:inline"><?php echo $_SESSION['flash_message']; ?></span>
+            <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                <svg class="fill-current h-6 w-6 text-green-500" role="button" onclick="this.parentElement.parentElement.remove()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <title>Đóng</title>
+                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                </svg>
+            </span>
+        </div>
+        <?php unset($_SESSION['flash_message']); ?>
+    <?php endif; ?>
+
+    <!-- Search form -->
+    <div class="mb-4">
+        <form method="GET" class="flex gap-4">
+            <div class="flex-1">
+                <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Tìm kiếm theo tên, email, mã sinh viên..." class="w-full px-4 py-2 border rounded-lg">
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                <i class="fas fa-search mr-2"></i>Tìm kiếm
             </button>
         </form>
     </div>
@@ -128,7 +86,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                 <tr>
                     <th scope="col" class="px-6 py-3">Ảnh</th>
                     <th scope="col" class="px-6 py-3">Thông tin</th>
-                    <th scope="col" class="px-6 py-3">Chức vụ</th>
+                    <th scope="col" class="px-6 py-3">Vai trò/Chức vụ</th>
                     <th scope="col" class="px-6 py-3">Lớp/Khoa</th>
                     <th scope="col" class="px-6 py-3">Trạng thái</th>
                     <th scope="col" class="px-6 py-3 whitespace-nowrap">Thao tác</th>
@@ -201,17 +159,19 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                                 </button>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex space-x-10">
-                                <a href="edit.php?id=<?php echo $user['Id']; ?>" 
-                                   class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline">
-                                    Sửa
-                                </a>
-                                <a href="/manage-htsv/admin/student/view.php?id=<?php echo $user['Id']; ?>" 
-                                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                                    Chi tiết
-                                </a>
-                            </div>
+                        <td class="px-6 py-4 text-right">
+                            <a href="edit.php?id=<?php echo $user['Id']; ?>" 
+                               class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline">
+                                Sửa
+                            </a>
+                            <a href="/manage-htsv/admin/student/view.php?id=<?php echo $user['Id']; ?>" 
+                               class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                Chi tiết
+                            </a>
+                            <form action="delete.php" method="POST" class="inline ml-2" onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">
+                                <input type="hidden" name="id" value="<?php echo $user['Id']; ?>">
+                                <button type="submit" class="font-medium text-red-600 hover:underline">Xóa</button>
+                            </form>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -274,6 +234,117 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
         </div>
     </div>
     <?php endif; ?>
+</div>
+
+<!-- Modal thêm người dùng -->
+<div id="addUserModal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-2xl max-h-full">
+        <div class="relative bg-white rounded-lg shadow">
+            <div class="flex items-start justify-between p-4 border-b rounded-t">
+                <h3 class="text-xl font-semibold text-gray-900">
+                    Thêm người dùng mới
+                </h3>
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center" data-modal-hide="addUserModal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Đóng</span>
+                </button>
+            </div>
+            <form id="addUserForm" action="add.php" method="POST">
+                <div class="p-6 space-y-6">
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label for="username" class="block mb-2 text-sm font-medium text-gray-900">Tên đăng nhập</label>
+                            <input type="text" name="username" id="username" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                        </div>
+                        <div>
+                            <label for="email" class="block mb-2 text-sm font-medium text-gray-900">Email</label>
+                            <input type="email" name="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                        </div>
+                        <div>
+                            <label for="fullname" class="block mb-2 text-sm font-medium text-gray-900 ">Họ và tên</label>
+                            <input type="text" name="fullname" id="fullname" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                        </div>
+                        <div>
+                            <label for="student_id" class="block mb-2 text-sm font-medium text-gray-900 ">Mã sinh viên</label>
+                            <input type="text" name="student_id" id="student_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        </div>
+                        <div>
+                            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 ">Mật khẩu</label>
+                            <input type="password" name="password" id="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                        </div>
+                        <div>
+                            <label for="role" class="block mb-2 text-sm font-medium text-gray-900 ">Vai trò</label>
+                            <select name="role" id="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                                <option value="2">Thành viên</option>
+                                <option value="1">Admin</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="class_id" class="block mb-2 text-sm font-medium text-gray-900 ">Lớp</label>
+                            <select name="class_id" id="class_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option value="">Chọn lớp</option>
+                                <?php foreach ($classes as $class): ?>
+                                    <option value="<?php echo $class['Id']; ?>">
+                                        <?php echo htmlspecialchars($class['TenLop'] . ' - ' . $class['TenKhoaTruong']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Thêm</button>
+                    <button data-modal-hide="addUserModal" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Import User Modal -->
+<div id="importUserModal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow">
+            <div class="flex items-start justify-between p-4 border-b rounded-t">
+                <h3 class="text-xl font-semibold text-gray-900">
+                    Import người dùng từ Excel
+                </h3>
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center" data-modal-hide="importUserModal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Đóng</span>
+                </button>
+            </div>
+            <form action="process_import.php" method="POST" enctype="multipart/form-data">
+                <div class="p-6 space-y-6">
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900" for="file_input">Chọn file Excel</label>
+                        <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" id="file_input" type="file" name="excel_file" accept=".xls,.xlsx" required>
+                        <p class="mt-1 text-sm text-gray-500">Chỉ chấp nhận file Excel (.xls, .xlsx)</p>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <p>Cấu trúc file Excel cần có các cột:</p>
+                        <ul class="list-disc ml-5 mt-1">
+                            <li>Mã sinh viên</li>
+                            <li>Họ tên</li>
+                            <li>Ngày sinh</li>
+                            <li>Giới tính</li>
+                            <li>Tên đăng nhập</li>
+                            <li>Email</li>
+                            <li>Lớp</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+                    <button type="submit" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Import</button>
+                    <button data-modal-hide="importUserModal" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <?php require_once __DIR__ . '/../../layouts/admin_footer.php'; ?>

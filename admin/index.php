@@ -92,7 +92,7 @@ try {
 
 <div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
     <!-- Thống kê thành viên -->
-    <div class="min-w-0 rounded-lg shadow-xs overflow-hidden bg-white">
+    <div class="min-w-0 rounded-lg shadow-xs overflow-hidden bg-orange-100">
         <div class="p-4 flex items-center">
             <div class="p-3 rounded-full text-orange-500 bg-orange-100 mr-4">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -110,9 +110,9 @@ try {
         </div>
     </div>
     <!-- Thống kê hoạt động -->
-    <div class="min-w-0 rounded-lg shadow-xs overflow-hidden bg-white">
+    <div class="min-w-0 rounded-lg shadow-xs overflow-hidden bg-pink-100">
         <div class="p-4 flex items-center">
-            <div class="p-3 rounded-full text-green-500 bg-green-100 mr-4">
+            <div class="p-3 rounded-full text-pink-500 bg-pink-100 mr-4">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                 </svg>
@@ -128,7 +128,7 @@ try {
         </div>
     </div>
     <!-- Thống kê nhiệm vụ -->
-    <div class="min-w-0 rounded-lg shadow-xs overflow-hidden bg-white">
+    <div class="min-w-0 rounded-lg shadow-xs overflow-hidden bg-yellow-100">
         <div class="p-4 flex items-center">
             <div class="p-3 rounded-full text-blue-500 bg-blue-100 mr-4">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -147,9 +147,9 @@ try {
         </div>
     </div>
     <!-- Thống kê quỹ -->
-    <div class="min-w-0 rounded-lg shadow-xs overflow-hidden bg-white">
+    <div class="min-w-0 rounded-lg shadow-xs overflow-hidden bg-green-100">
         <div class="p-4 flex items-center">
-            <div class="p-3 rounded-full text-teal-500 bg-teal-100 mr-4">
+            <div class="p-3 rounded-full text-green-500 bg-green-100 mr-4">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                 </svg>
@@ -221,7 +221,12 @@ try {
                                 <td class="px-4 py-3">
                                     <div class="flex items-center text-sm">
                                         <div>
-                                            <p class="font-semibold"><?php echo $activity['TenHoatDong']; ?></p>
+                                            <p class="font-semibold">
+                                                <a href="">
+                                                    
+                                                <?php echo $activity['TenHoatDong']; ?>
+                                                </a>
+                                            </p>
                                             <p class="text-xs text-gray-600"><?php echo $activity['DiaDiem']; ?></p>
                                         </div>
                                     </div>

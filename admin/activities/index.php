@@ -529,20 +529,24 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
 
 function deleteActivity(id) {
     if (confirm('Bạn có chắc chắn muốn xóa hoạt động này?')) {
-        fetch('delete_activity.php?id=' + id, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert(data.message || 'Có lỗi xảy ra');
-            }
-        })
-        .catch(error => {
-            alert('Có lỗi xảy ra');
-        });
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'process.php';
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'delete';
+        
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'id';
+        idInput.value = id;
+        
+        form.appendChild(actionInput);
+        form.appendChild(idInput);
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 
