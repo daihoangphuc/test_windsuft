@@ -56,6 +56,7 @@ try {
     $stmt = $db->query("SELECT Id, HoTen, lantruycapcuoi, anhdaidien 
                         FROM nguoidung 
                         WHERE lantruycapcuoi IS NOT NULL 
+                        AND DATE(lantruycapcuoi) = CURDATE()
                         ORDER BY lantruycapcuoi DESC 
                         LIMIT 5");
     if (!$stmt) {

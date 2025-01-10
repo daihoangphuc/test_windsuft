@@ -174,7 +174,7 @@ require_once '../layouts/header.php';
                             Xem chi tiết
                         </a>
                         
-                        <?php if ($activity['TrangThai'] == 0): ?>
+                        <!-- <?php if ($activity['TrangThai'] == 0): ?>
                             <?php if ($activity['DaDangKy']): ?>
                                 <button onclick="cancelRegistration(<?php echo $activity['Id']; ?>)"
                                         class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700">
@@ -186,7 +186,7 @@ require_once '../layouts/header.php';
                                     Đăng ký
                                 </button>
                             <?php endif; ?>
-                        <?php endif; ?>
+                        <?php endif; ?> -->
                     </div>
                 </div>
             </div>
