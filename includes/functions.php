@@ -1,4 +1,7 @@
 <?php
+if (!defined('INCLUDES_FUNCTIONS_INCLUDED')) {
+    define('INCLUDES_FUNCTIONS_INCLUDED', true);
+
 /**
  * Các hàm tiện ích cho toàn bộ ứng dụng
  */
@@ -134,4 +137,5 @@ function getActivities($db, $userId, $filters = []) {
     return $result->fetch_all(MYSQLI_ASSOC);
 }
 
+} // End of guard
 ?>

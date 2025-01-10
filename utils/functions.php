@@ -1,4 +1,7 @@
 <?php
+if (!defined('FUNCTIONS_INCLUDED')) {
+    define('FUNCTIONS_INCLUDED', true);
+
 function sanitize_input($data) {
     $data = trim($data);
     $data = stripslashes($data);
@@ -168,3 +171,5 @@ function mark_notification_as_read($notification_id) {
     $stmt->bind_param("i", $notification_id);
     return $stmt->execute();
 }
+
+} // End of guard

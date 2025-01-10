@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../config/auth.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../utils/functions.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -9,12 +11,9 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-// Check if user is logged in and is admin
-session_start();
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
-    header('Location: /manage-htsv/login.php');
-    exit();
-}
+// Check if user is admin
+$auth = new Auth();
+$auth->requireAdmin();
 
 try {
     // Khởi tạo kết nối
@@ -107,7 +106,68 @@ try {
     $sheet->setCellValue('B' . $currentRow, number_format($activityStats['completed_activities']));
     $currentRow += 2;
 
-    // 3. Detailed Activity List
+    // 3. Financial Statistics
+    $sheet->setCellValue('A' . $currentRow, 'THỐNG KÊ TÀI CHÍNH');
+    $sheet->mergeCells('A' . $currentRow . ':E' . $currentRow);
+    $sheet->getStyle('A' . $currentRow)->getFont()->setBold(true);
+    $currentRow++;
+
+    // Get financial data
+    $financialData = $conn->query("
+        SELECT 
+            SUM(CASE WHEN LoaiGiaoDich = 0 THEN SoTien ELSE 0 END) as total_income,
+            SUM(CASE WHEN LoaiGiaoDich = 1 THEN SoTien ELSE 0 END) as total_expense
+        FROM TaiChinh
+        WHERE NgayGiaoDich BETWEEN '$startDate' AND '$endDate'
+    ")->fetch_assoc();
+
+    $sheet->setCellValue('A' . $currentRow, 'Thu');
+    $sheet->setCellValue('B' . $currentRow, number_format($financialData['total_income']) . ' VNĐ');
+    $currentRow++;
+
+    $sheet->setCellValue('A' . $currentRow, 'Chi');
+    $sheet->setCellValue('B' . $currentRow, number_format($financialData['total_expense']) . ' VNĐ');
+    $currentRow++;
+
+    $balance = $financialData['total_income'] - $financialData['total_expense'];
+    $sheet->setCellValue('A' . $currentRow, 'Số dư');
+    $sheet->setCellValue('B' . $currentRow, number_format($balance) . ' VNĐ');
+    $currentRow += 2;
+
+    // 4. Task Statistics
+    $sheet->setCellValue('A' . $currentRow, 'THỐNG KÊ NHIỆM VỤ');
+    $sheet->mergeCells('A' . $currentRow . ':E' . $currentRow);
+    $sheet->getStyle('A' . $currentRow)->getFont()->setBold(true);
+    $currentRow++;
+
+    // Get task statistics
+    $taskStats = $conn->query("
+        SELECT 
+            COUNT(CASE WHEN TrangThai = 0 THEN 1 END) as chua_bat_dau,
+            COUNT(CASE WHEN TrangThai = 1 THEN 1 END) as dang_thuc_hien,
+            COUNT(CASE WHEN TrangThai = 2 THEN 1 END) as hoan_thanh,
+            COUNT(CASE WHEN TrangThai = 3 THEN 1 END) as qua_han
+        FROM nhiemvu
+        WHERE NgayTao BETWEEN '$startDate' AND '$endDate'
+    ")->fetch_assoc();
+
+    $sheet->setCellValue('A' . $currentRow, 'Chưa bắt đầu');
+    $sheet->setCellValue('B' . $currentRow, number_format($taskStats['chua_bat_dau']));
+    $currentRow++;
+
+    $sheet->setCellValue('A' . $currentRow, 'Đang thực hiện');
+    $sheet->setCellValue('B' . $currentRow, number_format($taskStats['dang_thuc_hien']));
+    $currentRow++;
+
+    $sheet->setCellValue('A' . $currentRow, 'Hoàn thành');
+    $sheet->setCellValue('B' . $currentRow, number_format($taskStats['hoan_thanh']));
+    $currentRow++;
+
+    $sheet->setCellValue('A' . $currentRow, 'Quá hạn');
+    $sheet->setCellValue('B' . $currentRow, number_format($taskStats['qua_han']));
+    $currentRow += 2;
+
+    // 5. Detailed Activity List
     $sheet->setCellValue('A' . $currentRow, 'CHI TIẾT HOẠT ĐỘNG');
     $sheet->mergeCells('A' . $currentRow . ':E' . $currentRow);
     $sheet->getStyle('A' . $currentRow)->getFont()->setBold(true);
