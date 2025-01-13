@@ -204,8 +204,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                     Xem
                                 </a>
                                 <?php if ($doc['Quyen'] >= 2): ?>
-                                    <a href="<?php echo htmlspecialchars($doc['DuongDan']); ?>" 
-                                       target="_blank"
+                                    <a href="../<?php echo htmlspecialchars(str_replace('../..', '', $doc['DuongDan'])); ?>"           
                                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 hover:bg-blue-600 hover:text-white transition duration-150 ease-in-out">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>

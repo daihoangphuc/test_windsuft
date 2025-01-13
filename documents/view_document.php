@@ -135,9 +135,9 @@ require_once __DIR__ . '/../layouts/header.php';
                         echo '<div class="bg-white shadow-lg rounded-lg overflow-hidden">';
                         echo '<div class="p-4 border-b border-gray-200 flex justify-between items-center">';
                         echo '<h2 class="text-xl font-semibold">' . htmlspecialchars($document['TenTaiLieu']) . '</h2>';
-                        if ($document['Quyen'] >= 2) {
-                            echo '<a href="' . htmlspecialchars($absolutePath) . '" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" download>Tải xuống</a>';
-                        }
+                        // if ($document['Quyen'] >= 2) {
+                        //     echo '<a href="' . htmlspecialchars($absolutePath) . '" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" download>Tải xuống</a>';
+                        // }
                         echo '</div>';
                         
                         // Hiển thị nội dung với CSS
