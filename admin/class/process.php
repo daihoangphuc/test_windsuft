@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/classes/ClassRoom.php';
+require_once __DIR__ . '/../../utils/functions.php';
 
 session_start();
 $classroom = new ClassRoom($conn);
@@ -11,17 +12,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $khoaTruongId = $_POST['khoaTruongId'] ?? '';
 
     if ($action === 'create' && !empty($tenLop) && !empty($khoaTruongId)) {
-        if ($classroom->create($tenLop, $khoaTruongId)) {
-            header('Location: index.php');
-            exit;
+        $result = $classroom->create($tenLop, $khoaTruongId);
+        if ($result['success']) {
+            log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Thêm lớp học', 'Thành công', "Đã thêm lớp học mới: $tenLop");
+            $_SESSION['success'] = $result['message'];
+        } else {
+            log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Thêm lớp học', 'Thất bại', "Lỗi khi thêm lớp học: $tenLop - " . $result['message']);
+            $_SESSION['error'] = $result['message'];
         }
         header('Location: index.php');
         exit;
     } elseif ($action === 'update' && !empty($tenLop) && !empty($khoaTruongId)) {
         $id = $_POST['id'] ?? '';
-        if ($classroom->update($id, $tenLop, $khoaTruongId)) {
-            header('Location: index.php');
-            exit;
+        $result = $classroom->update($id, $tenLop, $khoaTruongId);
+        if ($result['success']) {
+            log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Cập nhật lớp học', 'Thành công', "Đã cập nhật lớp học ID $id: $tenLop");
+            $_SESSION['success'] = $result['message'];
+        } else {
+            log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Cập nhật lớp học', 'Thất bại', "Lỗi khi cập nhật lớp học ID $id: $tenLop - " . $result['message']);
+            $_SESSION['error'] = $result['message'];
         }
         header('Location: index.php');
         exit;
@@ -31,18 +40,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if ($action === 'delete') {
         $id = $_GET['id'] ?? '';
-        if ($classroom->delete($id)) {
-            $_SESSION['success'] = "Xóa lớp thành công!";
-            header('Location: index.php');
-            exit;
+        // Lấy thông tin lớp học trước khi xóa để ghi log
+        $classInfo = $classroom->getById($id);
+        $result = $classroom->delete($id);
+        
+        if ($result['success']) {
+            log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Xóa lớp học', 'Thành công', 
+                        "Đã xóa lớp học ID $id: " . ($classInfo ? $classInfo['TenLop'] : 'Không tìm thấy tên lớp'));
+            $_SESSION['success'] = $result['message'];
+        } else {
+            log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Xóa lớp học', 'Thất bại', 
+                        "Lỗi khi xóa lớp học ID $id: " . ($classInfo ? $classInfo['TenLop'] : 'Không tìm thấy tên lớp') . " - " . $result['message']);
+            $_SESSION['error'] = $result['message'];
         }
-        $_SESSION['error'] = "Có lỗi xảy ra khi xóa lớp!";
         header('Location: index.php');
         exit;
     }
 }
 
 $_SESSION['error'] = "Có lỗi xảy ra!";
+log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Thao tác lớp học', 'Thất bại', "Có lỗi không xác định xảy ra");
 header('Location: index.php');
 exit;
 ?>

@@ -103,7 +103,7 @@ CREATE TABLE `khoatruong` (
 CREATE TABLE `log` (
   `Id` int(11) NOT NULL,
   `IP` varchar(45) DEFAULT NULL,
-  `NguoiDung` varchar(50) DEFAULT NULL,
+  `NguoiDung` varchar(50) DEFAULT NULL, -- TenDangNhap
   `HanhDong` varchar(255) DEFAULT NULL,
   `KetQua` varchar(50) DEFAULT NULL,
   `ChiTiet` text DEFAULT NULL,
@@ -200,7 +200,7 @@ CREATE TABLE `phanquyentailieu` (
 
 CREATE TABLE `taichinh` (
   `Id` int(11) NOT NULL,
-  `LoaiGiaoDich` tinyint(4) NOT NULL,
+  `LoaiGiaoDich` tinyint(4) NOT NULL, -- 0: Thu, 1: Chi
   `SoTien` bigint(20) NOT NULL,
   `MoTa` text DEFAULT NULL,
   `NgayGiaoDich` datetime NOT NULL,

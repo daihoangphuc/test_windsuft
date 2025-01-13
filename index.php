@@ -148,7 +148,7 @@ require_once __DIR__ . '/layouts/header.php';
             <p class="mt-5 line-clamp-3 text-sm leading-6 text-gray-600"><?php echo htmlspecialchars($activity['MoTa']); ?></p>
           </div>
           <div class="mt-6">
-            <a href="<?php echo BASE_URL; ?>/activities/view_activity.php?id=<?php echo $activity['Id']; ?>" class="text-sm font-semibold leading-6 text-[#4a90e2] hover:text-[#2d5a8e] transition duration-300">
+            <a href="<?php echo BASE_URL; ?>/activities/view.php?id=<?php echo $activity['Id']; ?>" class="text-sm font-semibold leading-6 text-[#4a90e2] hover:text-[#2d5a8e] transition duration-300">
               Xem chi tiết <span aria-hidden="true">→</span>
             </a>
           </div>

@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/layouts/header.php';
 
@@ -52,6 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+require_once __DIR__ . '/layouts/header.php';
+ob_end_flush();
 ?>
 
 <!DOCTYPE html>

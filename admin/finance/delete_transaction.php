@@ -1,60 +1,40 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../config/auth.php';
-require_once __DIR__ . '/../../utils/functions.php';
+require_once __DIR__ . '/../../config/database.php';
 
 $auth = new Auth();
 $auth->requireAdmin();
 
-header('Content-Type: application/json');
+// Khởi tạo kết nối
+$db = Database::getInstance();
+$conn = $db->getConnection();
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
-}
-
-try {
-    $data = json_decode(file_get_contents('php://input'), true);
-    if (!isset($data['transactionId'])) {
-        throw new Exception('ID giao dịch là bắt buộc');
-    }
-
-    $db = Database::getInstance();
-    $conn = $db->getConnection();
-    $transactionId = (int)$data['transactionId'];
-
-    // Lấy thông tin giao dịch trước khi xóa
-    $query = "SELECT * FROM taichinh WHERE Id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $transactionId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $transaction = $result->fetch_assoc();
-
-    if (!$transaction) {
-        throw new Exception('Không tìm thấy giao dịch');
-    }
-
-    // Xóa giao dịch
-    $deleteQuery = "DELETE FROM taichinh WHERE Id = ?";
-    $stmt = $conn->prepare($deleteQuery);
-    $stmt->bind_param("i", $transactionId);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $response = ['success' => false, 'message' => ''];
     
-    if ($stmt->execute()) {
-        // Ghi log
-        log_activity(
-            $_SERVER['REMOTE_ADDR'],
-            $_SESSION['user_id'],
-            'Xóa giao dịch tài chính',
-            'Thành công',
-            "Đã xóa giao dịch " . ($transaction['LoaiGiaoDich'] == 1 ? "thu" : "chi") . ": " . number_format($transaction['SoTien']) . " VNĐ"
-        );
+    if (isset($_POST['id'])) {
+        $id = $_POST['id'];
 
-        echo json_encode(['success' => true, 'message' => 'Xóa giao dịch thành công']);
+        try {
+            $query = "DELETE FROM `taichinh` WHERE `Id` = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("i", $id);
+            
+            if ($stmt->execute()) {
+                $response['success'] = true;
+                $response['message'] = 'Xóa giao dịch thành công!';
+            } else {
+                $response['message'] = 'Lỗi: Không thể xóa giao dịch!';
+            }
+        } catch (Exception $e) {
+            $response['message'] = 'Lỗi: ' . $e->getMessage();
+        }
     } else {
-        throw new Exception('Không thể xóa giao dịch');
+        $response['message'] = 'Thiếu ID giao dịch!';
     }
-
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
 }

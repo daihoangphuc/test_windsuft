@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../config/auth.php';
 require_once __DIR__ . '/../../includes/classes/ClassRoom.php';
+require_once __DIR__ . '/../../utils/functions.php';
 
 $auth = new Auth();
 $auth->requireAdmin();
@@ -12,6 +13,13 @@ $db = Database::getInstance()->getConnection();
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     
+    // Lấy thông tin lớp học trước khi xóa để ghi log
+    $stmt = $db->prepare("SELECT TenLop FROM lophoc WHERE Id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $classInfo = $stmt->get_result()->fetch_assoc();
+    $tenLop = $classInfo ? $classInfo['TenLop'] : 'Không tìm thấy';
+    
     // Kiểm tra xem có người dùng nào thuộc lớp này không
     $stmt = $db->prepare("SELECT COUNT(*) as count FROM nguoidung WHERE LopHocId = ?");
     $stmt->bind_param("i", $id);
@@ -20,14 +28,20 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
     $count = $result->fetch_assoc()['count'];
     
     if ($count > 0) {
+        log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Xóa lớp học', 'Thất bại', 
+                    "Không thể xóa lớp học ID $id ($tenLop) vì đang có $count thành viên thuộc lớp");
         $_SESSION['flash_error'] = "Không thể xóa lớp học này vì đang có " . $count . " thành viên thuộc lớp!";
     } else {
         // Thực hiện xóa nếu không có ràng buộc
         $stmt = $db->prepare("DELETE FROM lophoc WHERE Id = ?");
         $stmt->bind_param("i", $id);
         if ($stmt->execute()) {
+            log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Xóa lớp học', 'Thành công', 
+                        "Đã xóa lớp học ID $id: $tenLop");
             $_SESSION['flash_success'] = "Đã xóa lớp học thành công!";
         } else {
+            log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Xóa lớp học', 'Thất bại', 
+                        "Lỗi khi xóa lớp học ID $id: $tenLop");
             $_SESSION['flash_error'] = "Có lỗi xảy ra khi xóa lớp học!";
         }
     }

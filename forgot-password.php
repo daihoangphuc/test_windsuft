@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/utils/mail.php';
 require_once __DIR__ . '/layouts/header.php';
@@ -61,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: forgot-password.php');
     exit;
 }
+ob_end_flush();
 ?>
 
 <!DOCTYPE html>

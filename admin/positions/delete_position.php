@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../config/auth.php';
+require_once __DIR__ . '/../../utils/functions.php';
 
 $auth = new Auth();
 $auth->requireAdmin();
@@ -20,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['position_id'])) {
         
         if ($count > 0) {
             http_response_code(400);
+            log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Xóa chức vụ', 'Thất bại', "Không thể xóa chức vụ ID $positionId vì đang có $count người dùng đang sử dụng");
             echo json_encode([
                 'success' => false,
                 'message' => 'Không thể xóa chức vụ này vì đang có ' . $count . ' người dùng đang giữ chức vụ này.'
@@ -32,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['position_id'])) {
         $deleteStmt->bind_param("i", $positionId);
         
         if ($deleteStmt->execute()) {
+            log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Xóa chức vụ', 'Thành công', "Đã xóa chức vụ ID $positionId");
             echo json_encode([
                 'success' => true,
                 'message' => 'Xóa chức vụ thành công!'
@@ -41,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['position_id'])) {
         }
     } catch (Exception $e) {
         http_response_code(500);
+        log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Xóa chức vụ', 'Thất bại', "Lỗi khi xóa chức vụ ID $positionId: " . $e->getMessage());
         echo json_encode([
             'success' => false,
             'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()

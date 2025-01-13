@@ -29,9 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     if ($stmt->execute()) {
                         $success = 'Thêm chức vụ thành công.';
-                        log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['user_id'], 'Thêm chức vụ', 'Thành công', "Đã thêm chức vụ: $name");
+                        log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Thêm chức vụ', 'Thành công', "Đã thêm chức vụ: $name");
                     } else {
                         $error = 'Có lỗi xảy ra khi thêm chức vụ.';
+                        log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Thêm chức vụ', 'Thất bại', "Lỗi khi thêm chức vụ: $name");
                     }
                 }
                 break;
@@ -49,9 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     if ($stmt->execute()) {
                         $success = 'Cập nhật chức vụ thành công.';
-                        log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['user_id'], 'Cập nhật chức vụ', 'Thành công', "Đã cập nhật chức vụ ID: $id");
+                        log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Cập nhật chức vụ', 'Thành công', "Đã cập nhật chức vụ ID $id: $name");
                     } else {
                         $error = 'Có lỗi xảy ra khi cập nhật chức vụ.';
+                        log_activity($_SERVER['REMOTE_ADDR'], $_SESSION['username'], 'Cập nhật chức vụ', 'Thất bại', "Lỗi khi cập nhật chức vụ ID $id: $name");
                     }
                 }
                 break;

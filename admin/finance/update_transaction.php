@@ -1,68 +1,44 @@
 <?php
-require_once '../../config/database.php';
-require_once '../../utils/functions.php';
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../config/auth.php';
+require_once __DIR__ . '/../../config/database.php';
 
-header('Content-Type: application/json');
+$auth = new Auth();
+$auth->requireAdmin();
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+// Khởi tạo kết nối
+$db = Database::getInstance();
+$conn = $db->getConnection();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $response = ['success' => false, 'message' => ''];
+    
+    if (isset($_POST['id']) && isset($_POST['type']) && isset($_POST['amount']) && isset($_POST['description']) && isset($_POST['date'])) {
+        $id = $_POST['id'];
+        $type = $_POST['type'];
+        $amount = $_POST['amount'];
+        $description = $_POST['description'];
+        $date = $_POST['date'];
+
+        try {
+            $query = "UPDATE `taichinh` SET `LoaiGiaoDich` = ?, `SoTien` = ?, `MoTa` = ?, `NgayGiaoDich` = ? WHERE `Id` = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("iissi", $type, $amount, $description, $date, $id);
+            
+            if ($stmt->execute()) {
+                $response['success'] = true;
+                $response['message'] = 'Cập nhật giao dịch thành công!';
+            } else {
+                $response['message'] = 'Lỗi: Không thể cập nhật giao dịch!';
+            }
+        } catch (Exception $e) {
+            $response['message'] = 'Lỗi: ' . $e->getMessage();
+        }
+    } else {
+        $response['message'] = 'Thiếu thông tin cần thiết!';
+    }
+    
+    header('Content-Type: application/json');
+    echo json_encode($response);
     exit;
 }
-
-try {
-    $db = Database::getInstance();
-    $conn = $db->getConnection();
-
-    // Get and sanitize input
-    $transactionId = (int)$_POST['transactionId'];
-    $type = (int)$_POST['type'];
-    $amount = (float)$_POST['amount'];
-    $description = sanitize_input($_POST['description']);
-    $transactionDate = $_POST['transactionDate'];
-    
-    // Validate input
-    if (!in_array($type, [0, 1]) || $amount <= 0 || empty($description) || empty($transactionDate)) {
-        throw new Exception('Vui lòng điền đầy đủ thông tin hợp lệ');
-    }
-
-    // Start transaction
-    $conn->begin_transaction();
-
-    // Get old transaction data for logging
-    $query = "SELECT * FROM taichinh WHERE Id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $transactionId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $oldTransaction = $result->fetch_assoc();
-
-    if (!$oldTransaction) {
-        throw new Exception('Transaction not found');
-    }
-
-    // Update transaction
-    $query = "UPDATE taichinh SET LoaiGiaoDich = ?, SoTien = ?, MoTa = ?, NgayGiaoDich = ? WHERE Id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("idssi", $type, $amount, $description, $transactionDate, $transactionId);
-    $stmt->execute();
-
-    // Log activity
-    log_activity(
-        $_SERVER['REMOTE_ADDR'],
-        $_SESSION['user_id'],
-        'Cập nhật giao dịch tài chính',
-        'Thành công',
-        "Đã cập nhật giao dịch từ [" . ($oldTransaction['LoaiGiaoDich'] == 1 ? "thu" : "chi") . ": " . format_money($oldTransaction['SoTien']) . 
-        "] thành [" . ($type == 1 ? "thu" : "chi") . ": " . format_money($amount) . "]"
-    );
-
-    $conn->commit();
-    echo json_encode(['success' => true, 'message' => 'Cập nhật giao dịch thành công']);
-
-} catch (Exception $e) {
-    if (isset($conn)) {
-        $conn->rollback();
-    }
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-}
-?>

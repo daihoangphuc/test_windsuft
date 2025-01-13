@@ -174,7 +174,7 @@ $logs = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
     <div class="container mx-auto px-4 py-8">
         <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Log Hệ thống</h1>
+            <h1 class="text-3xl font-bold text-gray-900">Nhật ký Hệ thống</h1>
             <div class="text-gray-600">
                 <span id="currentTime"></span>
             </div>
@@ -303,16 +303,64 @@ $logs = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     Hiển thị <?php echo $offset + 1; ?> đến <?php echo min($offset + $limit, $totalRecords); ?> 
                     trong tổng số <?php echo $totalRecords; ?> kết quả
                 </div>
-                <div class="flex gap-2">
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <a href="?page=<?php echo $i; ?>" 
-                       class="px-3 py-1 rounded-lg <?php echo $i === $page ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">
-                        <?php echo $i; ?>
-                    </a>
-                    <?php endfor; ?>
+                
+                <div class="flex justify-center">
+                    <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                        <?php
+                        // Nút Previous
+                        if ($page > 1): ?>
+                            <a href="?page=<?php echo $page-1; ?>" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                                <span class="sr-only">Previous</span>
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        <?php endif; ?>
+
+                        <?php
+                        // Hiển thị các số trang
+                        $maxPagesToShow = 3;
+                        $startPage = max(1, min($page - floor($maxPagesToShow/2), $totalPages - $maxPagesToShow + 1));
+                        $endPage = min($startPage + $maxPagesToShow - 1, $totalPages);
+
+                        // Trang đầu
+                        if ($startPage > 1): ?>
+                            <a href="?page=1" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">1</a>
+                            <?php if ($startPage > 2): ?>
+                                <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">...</span>
+                            <?php endif;
+                        endif;
+
+                        // Các trang giữa
+                        for ($i = $startPage; $i <= $endPage; $i++): ?>
+                            <a href="?page=<?php echo $i; ?>" 
+                               class="relative inline-flex items-center px-4 py-2 text-sm font-semibold <?php echo ($i == $page) ? 'bg-indigo-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'; ?>">
+                                <?php echo $i; ?>
+                            </a>
+                        <?php endfor;
+
+                        // Trang cuối
+                        if ($endPage < $totalPages): ?>
+                            <?php if ($endPage < $totalPages - 1): ?>
+                                <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">...</span>
+                            <?php endif; ?>
+                            <a href="?page=<?php echo $totalPages; ?>" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"><?php echo $totalPages; ?></a>
+                        <?php endif; ?>
+
+                        <?php 
+                        // Nút Next
+                        if ($page < $totalPages): ?>
+                            <a href="?page=<?php echo $page+1; ?>" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                                <span class="sr-only">Next</span>
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        <?php endif; ?>
+                    </nav>
                 </div>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
         </div>
     </div>
 

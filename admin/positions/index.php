@@ -144,6 +144,25 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
             </form>
         </div>
 
+        <?php if (isset($_GET['error'])): ?>
+            <?php if ($_GET['error'] === 'empty'): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <strong class="font-bold">Lỗi!</strong>
+                    <span class="block sm:inline">Vui lòng điền đầy đủ thông tin.</span>
+                </div>
+            <?php elseif ($_GET['error'] === 'duplicate'): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <strong class="font-bold">Lỗi!</strong>
+                    <span class="block sm:inline">Tên chức vụ này đã tồn tại.</span>
+                </div>
+            <?php elseif ($_GET['error'] === 'add' || $_GET['error'] === 'edit'): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <strong class="font-bold">Lỗi!</strong>
+                    <span class="block sm:inline">Đã có lỗi xảy ra. Vui lòng thử lại.</span>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
