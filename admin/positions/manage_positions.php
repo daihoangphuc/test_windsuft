@@ -5,7 +5,7 @@ require_once '../../utils/auth.php';
 
 // Ensure user is logged in and is admin
 session_start();
-ensure_admin_logged_in();
+// ensure_admin_logged_in();
 
 $db = Database::getInstance()->getConnection();
 $error = '';

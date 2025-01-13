@@ -1,4 +1,7 @@
 <?php
+// Include error handler
+require_once __DIR__ . '/../includes/error_handler.php';
+
 // Include database configuration
 require_once __DIR__ . '/database.php';
 

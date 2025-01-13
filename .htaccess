@@ -1,0 +1,51 @@
+Options -Indexes
+
+ErrorDocument 404 /manage-htsv/errors/404.php
+ErrorDocument 500 /manage-htsv/errors/500.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /manage-htsv/
+    
+    # Nếu request không phải file hoặc thư mục thực
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Chuyển hướng đến trang 404
+    RewriteRule ^(.*)$ errors/404.php [L]
+</IfModule>
+
+# Bảo vệ file .htaccess
+<Files .htaccess>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Bảo vệ thư mục includes
+<IfModule mod_rewrite.c>
+    RewriteRule ^includes/ - [F,L]
+</IfModule>
+
+# Thiết lập charset mặc định
+AddDefaultCharset UTF-8
+
+# Bật CORS nếu cần
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+</IfModule>
+
+# Tăng cường bảo mật
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Cấu hình PHP
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>

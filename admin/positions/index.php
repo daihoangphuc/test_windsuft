@@ -168,7 +168,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                                 <i class="fas fa-edit"></i>
                                 Sửa
                             </button>
-                            <button onclick="deletePosition(<?php echo $position['Id']; ?>, '<?php echo htmlspecialchars($position['TenChucVu']); ?>')" 
+                            <button onclick="deletePosition(<?php echo $position['Id']; ?>)" 
                                     class="text-red-600 hover:text-red-900">
                                 <i class="fas fa-trash"></i>
                                 Xóa
@@ -236,14 +236,42 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                     </div>
                 </div>
                 <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
-                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
                         Lưu
                     </button>
-                    <button type="button" onclick="closeModal()" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
+                    <button type="button" onclick="closeModal()" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
                         Hủy
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" tabindex="-1" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full flex items-center justify-center">
+    <div class="relative w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow">
+            <button type="button" class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center" onclick="closeDeleteModal()">
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+            </button>
+            <div class="p-6 text-center">
+                <svg class="mx-auto mb-4 text-gray-400 w-12 h-12" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                </svg>
+                <h3 class="mb-5 text-lg font-normal text-gray-500">Bạn có chắc chắn muốn xóa chức vụ này không?</h3>
+                <form id="deleteForm" method="POST" class="inline-flex">
+                    <input type="hidden" name="position_id" id="deletePositionId">
+                    <button type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2">
+                        Xóa
+                    </button>
+                    <button type="button" onclick="closeDeleteModal()" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
+                        Hủy
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -274,14 +302,83 @@ function closeModal() {
     form.reset();
 }
 
-function deletePosition(id, name) {
-    if (confirm('Bạn có chắc chắn muốn xóa chức vụ "' + name + '" không?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.innerHTML = `<input type="hidden" name="delete" value="1"><input type="hidden" name="id" value="${id}">`;
-        document.body.appendChild(form);
-        form.submit();
+function deletePosition(id) {
+    document.getElementById('deletePositionId').value = id;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+}
+
+// Xử lý form xóa
+document.getElementById('deleteForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    formData.append('position_id', document.getElementById('deletePositionId').value);
+    
+    fetch('delete_position.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hiển thị thông báo thành công
+            showNotification(data.message, 'success');
+            // Đóng modal
+            closeDeleteModal();
+            // Reload trang sau 1 giây
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            // Hiển thị thông báo lỗi
+            showNotification(data.message, 'error');
+            closeDeleteModal();
+        }
+    })
+    .catch(error => {
+        showNotification('Đã xảy ra lỗi khi xóa chức vụ', 'error');
+        closeDeleteModal();
+    });
+});
+
+// Hàm hiển thị thông báo
+function showNotification(message, type = 'success') {
+    // Kiểm tra xem đã có notification container chưa
+    let container = document.getElementById('notificationContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notificationContainer';
+        container.className = 'fixed top-0 left-0 right-0 z-50 flex justify-center transform -translate-y-full transition-transform duration-300';
+        document.body.appendChild(container);
     }
+
+    // Tạo notification mới
+    const notification = document.createElement('div');
+    notification.className = `m-4 px-6 py-3 rounded shadow-lg text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+    notification.textContent = message;
+
+    // Xóa thông báo cũ nếu có
+    container.innerHTML = '';
+    
+    // Thêm thông báo mới
+    container.appendChild(notification);
+    
+    // Hiển thị container
+    requestAnimationFrame(() => {
+        container.style.transform = 'translateY(0)';
+    });
+
+    // Ẩn sau 3 giây
+    setTimeout(() => {
+        container.style.transform = 'translateY(-100%)';
+        setTimeout(() => {
+            container.remove();
+        }, 300);
+    }, 3000);
 }
 </script>
 
