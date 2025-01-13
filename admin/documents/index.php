@@ -61,9 +61,7 @@ $result = $stmt->get_result();
 $pagination = new Pagination($total_documents, $limit);
 
 ?>
-
 <?php require_once __DIR__ . '/../../layouts/admin_header.php'; ?>
-
 <div class="p-4">
     <div class="bg-white shadow rounded-lg p-4">
         <div class="flex justify-between items-center mb-4">
@@ -71,6 +69,9 @@ $pagination = new Pagination($total_documents, $limit);
             <button type="button" data-modal-target="documentModal" data-modal-toggle="documentModal" 
                     class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
                 Thêm tài liệu
+            </button>
+            <button onclick="showPermissionModal()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Phân quyền tài liệu
             </button>
         </div>
         
@@ -186,7 +187,7 @@ $pagination = new Pagination($total_documents, $limit);
                         <svg class="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
                         Thêm tài liệu
                     </button>
-                    <button type="button" data-modal-hide="documentModal" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
+                    <button type="button" data-modal-hide="documentModal" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
                         Hủy
                     </button>
                 </div>
@@ -249,6 +250,64 @@ $pagination = new Pagination($total_documents, $limit);
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Permission Modal -->
+<div id="permissionModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                    Phân quyền tài liệu
+                </h3>
+                <div class="mt-4">
+                    <form id="permissionForm">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="document">
+                                Tài liệu
+                            </label>
+                            <select id="document" name="document" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <?php
+                                $docs = $conn->query("SELECT Id, TenTaiLieu FROM tailieu")->fetch_all(MYSQLI_ASSOC);
+                                foreach ($docs as $doc) {
+                                    echo "<option value='{$doc['Id']}'>{$doc['TenTaiLieu']}</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">
+                                Quyền truy cập
+                            </label>
+                            <div class="mt-2">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="permission" value="1" class="form-radio" checked>
+                                    <span class="ml-2">Chỉ đọc</span>
+                                </label>
+                                <label class="inline-flex items-center ml-6">
+                                    <input type="radio" name="permission" value="2" class="form-radio">
+                                    <span class="ml-2">Chỉnh sửa</span>
+                                </label>
+                                <label class="inline-flex items-center ml-6">
+                                    <input type="radio" name="permission" value="3" class="form-radio">
+                                    <span class="ml-2">Toàn quyền</span>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="savePermission()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Lưu
+                </button>
+                <button type="button" onclick="hidePermissionModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Hủy
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -389,6 +448,43 @@ window.deleteDocument = async function(documentId) {
         }
     }
 };
+
+function showPermissionModal() {
+    document.getElementById('permissionModal').classList.remove('hidden');
+}
+
+function hidePermissionModal() {
+    document.getElementById('permissionModal').classList.add('hidden');
+}
+
+function savePermission() {
+    const documentId = document.getElementById('document').value;
+    const permission = document.querySelector('input[name="permission"]:checked').value;
+    
+    fetch('save_permission.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            documentId: documentId,
+            permission: permission
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Đã lưu phân quyền thành công!');
+            hidePermissionModal();
+        } else {
+            alert('Có lỗi xảy ra: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi lưu phân quyền');
+    });
+}
 </script>
 
 <?php require_once __DIR__ . '/../../layouts/admin_footer.php'; ?>

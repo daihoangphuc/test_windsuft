@@ -24,8 +24,8 @@ $types = $conn->query($typeQuery)->fetch_all(MYSQLI_ASSOC);
 $baseQuery = "
     FROM tailieu t
     LEFT JOIN nguoidung n ON t.NguoiTaoId = n.Id
-    LEFT JOIN phanquyentailieu p ON t.Id = p.TaiLieuId
-    WHERE (p.VaiTroId = ? OR p.VaiTroId IS NULL)
+    LEFT JOIN phanquyentailieu p ON t.Id = p.TaiLieuId 
+    WHERE p.VaiTroId = ? AND p.Quyen >= 1
 ";
 
 $params = [$_SESSION['role_id']];
@@ -53,7 +53,7 @@ $stmt->execute();
 $total = $stmt->get_result()->fetch_assoc()['total'];
 
 // Phân trang
-$limit = 5; // Changed from 10 to 5 items per page
+$limit = 5; 
 $totalPages = ceil($total / $limit);
 $page = isset($_GET['page']) ? max(1, min($totalPages, intval($_GET['page']))) : 1;
 $offset = ($page - 1) * $limit;
@@ -67,7 +67,8 @@ $query = "
         t.DuongDan,
         t.LoaiTaiLieu,
         t.NgayTao,
-        n.HoTen as NguoiTao
+        n.HoTen as NguoiTao,
+        p.Quyen
     " . $baseQuery . "
     ORDER BY t.NgayTao DESC 
     LIMIT ? OFFSET ?
@@ -84,7 +85,6 @@ $documents = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 require_once __DIR__ . '/../layouts/header.php';
 ?>
-
 <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-[#4a90e2] mb-2">Tra cứu tài liệu</h2>
@@ -194,15 +194,32 @@ require_once __DIR__ . '/../layouts/header.php';
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            <div class="flex-shrink-0 w-full sm:w-auto">
-                                <a href="<?php echo htmlspecialchars($doc['DuongDan']); ?>" 
-                                   target="_blank"
+                            <div class="flex-shrink-0 w-full sm:w-auto flex gap-2">
+                                <a href="view_document.php?id=<?php echo $doc['Id']; ?>" 
                                    class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 hover:bg-blue-600 hover:text-white transition duration-150 ease-in-out">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
-                                    Tải xuống
+                                    Xem
                                 </a>
+                                <?php if ($doc['Quyen'] >= 2): ?>
+                                    <a href="<?php echo htmlspecialchars($doc['DuongDan']); ?>" 
+                                       target="_blank"
+                                       class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 hover:bg-blue-600 hover:text-white transition duration-150 ease-in-out">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                        </svg>
+                                        Tải về
+                                    </a>
+                                <?php else: ?>
+                                    <span class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 cursor-not-allowed">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                        </svg>
+                                        Không có quyền tải về
+                                    </span>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -249,7 +266,6 @@ require_once __DIR__ . '/../layouts/header.php';
                                         </svg>
                                     </a>
                                 <?php endif; ?>
-
                                 <?php
                                 $range = 2;
                                 $rangeStart = max(1, $page - $range);
@@ -273,7 +289,6 @@ require_once __DIR__ . '/../layouts/header.php';
                                     echo '<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>';
                                 }
                                 ?>
-
                                 <?php if ($page < $totalPages): ?>
                                     <a href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&type=<?php echo urlencode($type); ?>" 
                                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
