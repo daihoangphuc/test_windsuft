@@ -25,7 +25,6 @@ $relatedNews = $news->getRelated($id, 3);
 $pageTitle = $newsData['TieuDe'];
 include '../layouts/header.php';
 ?>
-
 <div class="container mx-auto px-4 py-8">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Nội dung chính -->
@@ -52,11 +51,11 @@ include '../layouts/header.php';
             </nav>
 
             <article class="bg-white rounded-lg shadow-lg overflow-hidden">
-                <?php if ($newsData['FileDinhKem']): ?>
+                <!-- <?php if ($newsData['FileDinhKem']): ?>
                 <img src="/manage-htsv/<?php echo htmlspecialchars($newsData['FileDinhKem']); ?>" 
                      alt="<?php echo htmlspecialchars($newsData['TieuDe']); ?>" 
                      class="w-full h-64 object-cover">
-                <?php endif; ?>
+                <?php endif; ?> -->
                 
                 <div class="p-6">
                     <h1 class="text-3xl font-bold mb-4"><?php echo htmlspecialchars($newsData['TieuDe']); ?></h1>
@@ -73,7 +72,7 @@ include '../layouts/header.php';
                     </div>
 
                     <div class="prose max-w-none">
-                        <?php echo nl2br(htmlspecialchars($newsData['NoiDung'])); ?>
+                        <?php echo $newsData['NoiDung']; ?>
                     </div>
 
                     <?php if ($newsData['FileDinhKem']): ?>

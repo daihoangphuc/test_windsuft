@@ -69,7 +69,7 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                     <th scope="col" class="px-6 py-3">Tên nhiệm vụ</th>
                     <th scope="col" class="px-6 py-3">Thời gian</th>
                     <th scope="col" class="px-6 py-3">Trạng thái</th>
-                    <th scope="col" class="px-6 py-3">Người được phân công</th>
+                    <th scope="col" class="px-6 py-3 whitespace-nowrap">Người được phân công</th>
                     <th scope="col" class="px-6 py-3">Thao tác</th>
                 </tr>
             </thead>

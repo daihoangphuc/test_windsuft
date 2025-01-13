@@ -170,7 +170,7 @@ $taskAssignmentData = get_task_assignment_data($conn);
 require_once __DIR__ . '/../../layouts/admin_header.php';
 ?>
 
-<div class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5">
+<div class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200">
     <div class="mb-1 w-full">
         <div class="mb-4">
             <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Báo cáo thống kê</h1>
@@ -215,13 +215,13 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <!-- Member Statistics -->
             <div class="bg-white rounded-lg shadow p-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Thành viên mới</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Thành viên mới (30 Ngày)</h3>
                 <p class="text-3xl font-bold text-blue-600"><?php echo number_format($statistics['members']['new_members']); ?></p>
             </div>
 
             <!-- Task Statistics -->
             <div class="bg-white rounded-lg shadow p-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Hoạt động mới</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Hoạt động mới (30 Ngày)</h3>
                 <p class="text-3xl font-bold text-green-600"><?php echo number_format($statistics['tasks']['total_tasks']); ?></p>
             </div>
 
@@ -238,26 +238,28 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
             </div>
         </div>
 
-        <!-- Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <!-- Financial Chart -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Biểu đồ thu chi</h3>
-                <canvas id="financeChart"></canvas>
-            </div>
+        <div class="grid grid-cols-4 gap-4">
+    <!-- Financial Chart -->
+    <div class="col-span-3 bg-white rounded-lg shadow p-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Biểu đồ thu chi</h3>
+        <canvas id="financeChart"></canvas>
+    </div>
 
-            <!-- Task Status Chart -->
-            <div class="bg-white rounded-lg shadow p-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Biểu đồ trạng thái nhiệm vụ</h3>
-                <div class="relative" style="height: 300px;" >
-                    <canvas id="taskChart"></canvas>
-                    <div  style="margin-top: -20px;" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                        <div class="text-3xl font-bold text-gray-700"><?php echo $taskChartData['total']; ?></div>
-                        <div class="text-sm text-gray-500">Tổng nhiệm vụ</div>
-                    </div>
-                </div>
-            </div>
+<!-- Task Status Chart -->
+<div class="col-span-1 bg-white rounded-lg shadow p-4 flex flex-col items-center">
+    <h3 class="text-lg font-semibold text-gray-900 mb-10 text-center">Biểu đồ trạng thái nhiệm vụ</h3>
+    <div class="relative w-full" style="height: 400px;">
+        <canvas id="taskChart"></canvas>
+        <!-- Phần nội dung overlay -->
+        <div class="absolute mt-[-100px] inset-0 flex flex-col items-center justify-center text-center">
+            <div class="text-3xl font-bold text-gray-700"><?php echo $taskChartData['total']; ?></div>
+            <div class="text-sm text-gray-500">Tổng nhiệm vụ</div>
         </div>
+    </div>
+</div>
+
+</div>
+
     </div>
 </div>
 
@@ -293,6 +295,7 @@ new Chart(financeCtx, {
         }
     }
 });
+
 
 // Task Chart
 const taskCtx = document.getElementById('taskChart').getContext('2d');

@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $timeWindow->modify('-15 minutes');
     
     if ($currentTime > $endTime || $currentTime < $timeWindow) {
-        echo json_encode(['success' => false, 'message' => 'Ngoài thởi gian điểm danh']);
+        echo json_encode(['success' => false, 'message' => 'Ngoài thời gian điểm danh']);
         exit;
     }
     
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $distance = calculateDistance($userLat, $userLng, trim($activityCoords[0]), trim($activityCoords[1]));
     
     if ($distance > 200) { // 200 meters
-        echo json_encode(['success' => false, 'message' => 'Bạn đang ở quá xa địa điểm hoạt động']);
+        echo json_encode(['success' => false, 'message' => 'Bạn không ở trong pham vi diễn ra hoạt động']);
         exit;
     }
     

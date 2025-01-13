@@ -25,8 +25,9 @@ $news_list = $news->getAll($search, $limit, $offset);
 
 require_once __DIR__ . '/../../layouts/admin_header.php';
 
-
 ?>
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
 <div class="p-4">
     <div class="bg-white shadow rounded-lg p-4">
@@ -152,7 +153,8 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
                         </div>
                         <div>
                             <label for="NoiDung" class="block mb-2 text-sm font-medium text-gray-900">Nội dung</label>
-                            <textarea name="NoiDung" id="NoiDung" rows="4" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5" required></textarea>
+                            <input type="hidden" name="NoiDung" id="NoiDung">
+                            <div id="editor-container" style="height: 300px;"></div>
                         </div>
                         <div>
                             <label for="FileDinhKem" class="block mb-2 text-sm font-medium text-gray-900">File đính kèm</label>
@@ -176,46 +178,43 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
         <!-- Modal content -->
         <div class="relative bg-white rounded-lg shadow">
             <!-- Modal header -->
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+            <div class="flex items-start justify-between p-4 border-b rounded-t">
                 <h3 class="text-xl font-semibold text-gray-900">
-                    Sửa tin tức
+                    Chỉnh sửa tin tức
                 </h3>
-                <button type="button" onclick="closeEditModal()" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center">
+                <button type="button" onclick="closeEditModal()" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                     </svg>
-                    <span class="sr-only">Đóng</span>
                 </button>
             </div>
             <!-- Modal body -->
-            <form id="editNewsForm" class="p-4 md:p-5">
-                <input type="hidden" id="editNewsId">
-                <div class="grid gap-4 mb-4">
-                    <div>
-                        <label for="editTieuDe" class="block mb-2 text-sm font-medium text-gray-900">Tiêu đề</label>
-                        <input type="text" name="TieuDe" id="editTieuDe" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5" required>
-                    </div>
-                    <div>
-                        <label for="editNoiDung" class="block mb-2 text-sm font-medium text-gray-900">Nội dung</label>
-                        <textarea id="editNoiDung" name="NoiDung" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" required></textarea>
-                    </div>
-                    <div>
-                        <label for="editFileDinhKem" class="block mb-2 text-sm font-medium text-gray-900">File đính kèm</label>
-                        <input type="file" name="FileDinhKem" id="editFileDinhKem" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
-                        <div id="currentFile" class="mt-2 text-sm text-gray-500"></div>
-                    </div>
-                    <div class="preview-container mt-2 hidden">
-                        <img id="previewImage" src="" alt="Preview" class="max-w-xs mx-auto rounded-lg shadow-lg">
+            <form id="editNewsForm" enctype="multipart/form-data">
+                <input type="hidden" name="id" id="editId">
+                <div class="p-6 space-y-6">
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <label for="editTieuDe" class="block mb-2 text-sm font-medium text-gray-900">Tiêu đề</label>
+                            <input type="text" name="TieuDe" id="editTieuDe" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5" required>
+                        </div>
+                        <div>
+                            <label for="editNoiDung" class="block mb-2 text-sm font-medium text-gray-900">Nội dung</label>
+                            <input type="hidden" name="NoiDung" id="editNoiDung">
+                            <div id="edit-editor-container" style="height: 300px;"></div>
+                        </div>
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900">File đính kèm hiện tại</label>
+                            <div id="currentFile" class="mb-2"></div>
+                            <label for="editFileDinhKem" class="block mb-2 text-sm font-medium text-gray-900">Thay đổi file đính kèm (nếu cần)</label>
+                            <input type="file" name="FileDinhKem" id="editFileDinhKem" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5" accept="image/*">
+                            <img id="previewImage" src="" alt="" class="mt-2 max-w-xs hidden">
+                        </div>
                     </div>
                 </div>
                 <!-- Modal footer -->
-                <div class="flex items-center justify-end space-x-2 border-t border-gray-200 rounded-b pt-4">
-                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
-                        Cập nhật
-                    </button>
-                    <button type="button" onclick="closeEditModal()" class="ms-3 text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
-                        Hủy
-                    </button>
+                <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Lưu thay đổi</button>
+                    <button type="button" onclick="closeEditModal()" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">Hủy</button>
                 </div>
             </form>
         </div>
@@ -223,100 +222,119 @@ require_once __DIR__ . '/../../layouts/admin_header.php';
 </div>
 
 <script>
+// Khởi tạo Quill Editor cho form thêm mới
+var quill = new Quill('#editor-container', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'header': 1 }, { 'header': 2 }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'script': 'sub'}, { 'script': 'super' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            [{ 'direction': 'rtl' }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'font': [] }],
+            [{ 'align': [] }],
+            ['clean'],
+            ['link', 'image']
+        ]
+    }
+});
+
+// Khởi tạo Quill Editor cho form chỉnh sửa
+var editQuill = new Quill('#edit-editor-container', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'header': 1 }, { 'header': 2 }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'script': 'sub'}, { 'script': 'super' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            [{ 'direction': 'rtl' }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'font': [] }],
+            [{ 'align': [] }],
+            ['clean'],
+            ['link', 'image']
+        ]
+    }
+});
+
+// Cập nhật nội dung vào input hidden khi submit form thêm mới
+document.getElementById('addForm').onsubmit = function() {
+    var content = quill.root.innerHTML;
+    document.getElementById('NoiDung').value = content;
+};
+
+// Cập nhật nội dung vào input hidden khi submit form chỉnh sửa
+document.getElementById('editNewsForm').onsubmit = function() {
+    var content = editQuill.root.innerHTML;
+    document.getElementById('editNoiDung').value = content;
+};
+
 function openAddModal() {
     document.getElementById('addModal').classList.remove('hidden');
+    document.getElementById('addModal').classList.add('flex');
+    quill.setText('');
 }
 
 function closeAddModal() {
     document.getElementById('addModal').classList.add('hidden');
+    document.getElementById('addModal').classList.remove('flex');
     document.getElementById('addForm').reset();
+    quill.setText('');
 }
 
 function openEditModal(id) {
-    // Reset form
-    document.getElementById('editNewsForm').reset();
-    document.getElementById('currentFile').innerHTML = '';
-    document.getElementById('previewImage').src = '';
-    document.querySelector('.preview-container').classList.add('hidden');
+    document.getElementById('editNewsModal').classList.remove('hidden');
+    document.getElementById('editNewsModal').classList.add('flex');
+    document.getElementById('editId').value = id;
     
-    // Lấy thông tin tin tức
-    fetch(`get_news.php?id=${id}`)
+    // Lấy thông tin tin tức cần sửa
+    fetch('get_news.php?id=' + id)
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                const news = data.news;
-                document.getElementById('editNewsId').value = news.Id;
-                document.getElementById('editTieuDe').value = news.TieuDe;
-                document.getElementById('editNoiDung').value = news.NoiDung;
+            if (data.success && data.news) {
+                document.getElementById('editTieuDe').value = data.news.TieuDe;
+                editQuill.root.innerHTML = data.news.NoiDung;
                 
-                // Hiển thị file đính kèm hiện tại nếu có
-                const currentFileDiv = document.getElementById('currentFile');
-                if (news.FileDinhKem) {
-                    currentFileDiv.innerHTML = `
-                        <div class="flex items-center space-x-2">
-                            <span>File hiện tại:</span>
-                            <a href="/manage-htsv/${news.FileDinhKem}" 
-                               class="text-blue-600 hover:underline" 
-                               target="_blank">
-                                ${news.FileDinhKem.split('/').pop()}
-                            </a>
-                        </div>`;
-                    
-                    // Hiển thị preview nếu là ảnh
-                    if (news.FileDinhKem.match(/\.(jpg|jpeg|png|gif)$/i)) {
-                        const previewImage = document.getElementById('previewImage');
-                        previewImage.src = `/manage-htsv/${news.FileDinhKem}`;
-                        document.querySelector('.preview-container').classList.remove('hidden');
-                    }
+                if (data.news.FileDinhKem) {
+                    document.getElementById('currentFile').innerHTML = `
+                        <a href="/manage-htsv/${data.news.FileDinhKem}" class="text-blue-600 hover:underline" target="_blank">
+                            Xem file hiện tại
+                        </a>`;
                 } else {
-                    currentFileDiv.innerHTML = '<span class="text-gray-500">Chưa có file đính kèm</span>';
+                    document.getElementById('currentFile').innerHTML = 'Không có file đính kèm';
                 }
-                
-                // Hiển thị modal
-                const modal = document.getElementById('editNewsModal');
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
             } else {
-                alert(data.message);
+                alert(data.message || 'Không thể lấy thông tin tin tức');
+                closeEditModal();
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Có lỗi xảy ra khi lấy thông tin tin tức');
+            closeEditModal();
         });
 }
 
 function closeEditModal() {
-    const modal = document.getElementById('editNewsModal');
-    modal.classList.remove('flex');
-    modal.classList.add('hidden');
+    document.getElementById('editNewsModal').classList.add('hidden');
+    document.getElementById('editNewsModal').classList.remove('flex');
+    document.getElementById('editNewsForm').reset();
+    document.getElementById('currentFile').innerHTML = '';
+    document.getElementById('previewImage').src = '';
+    document.getElementById('previewImage').classList.add('hidden');
+    editQuill.setText('');
 }
-
-document.getElementById('editNewsForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const newsId = document.getElementById('editNewsId').value;
-    
-    fetch(`edit_news.php?id=${newsId}`, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            closeEditModal();
-            location.reload();
-        } else {
-            alert(data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra khi cập nhật tin tức');
-    });
-});
 
 // Xử lý form thêm tin tức
 document.getElementById('addForm').addEventListener('submit', function(e) {
@@ -340,6 +358,31 @@ document.getElementById('addForm').addEventListener('submit', function(e) {
     });
 });
 
+// Xử lý form chỉnh sửa tin tức
+document.getElementById('editNewsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    fetch('edit_news.php?id=' + document.getElementById('editId').value, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            closeEditModal();
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi cập nhật tin tức');
+    });
+});
+
 // Preview ảnh khi chọn file mới
 document.getElementById('editFileDinhKem').addEventListener('change', function(e) {
     const file = e.target.files[0];
@@ -347,12 +390,12 @@ document.getElementById('editFileDinhKem').addEventListener('change', function(e
         const reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById('previewImage').src = e.target.result;
-            document.querySelector('.preview-container').classList.remove('hidden');
+            document.getElementById('previewImage').classList.remove('hidden');
         };
         reader.readAsDataURL(file);
     } else {
         document.getElementById('previewImage').src = '';
-        document.querySelector('.preview-container').classList.add('hidden');
+        document.getElementById('previewImage').classList.add('hidden');
     }
 });
 

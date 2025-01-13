@@ -177,10 +177,13 @@ require_once __DIR__ . '/layouts/header.php';
                         <span class="bg-[#fce7f3] text-[#4a90e2] text-xs font-medium px-2.5 py-0.5 rounded-full">Tin tức</span>
                         <span class="text-gray-500 text-sm ml-2"><?php echo date('d/m/Y', strtotime($item['NgayTao'])); ?></span>
                     </div>
-                    <a href="#">
+                    <a href="/manage-htsv/news/detail.php?id=<?php echo $item['Id']; ?>">
                         <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 hover:text-[#4a90e2] transition duration-300"><?php echo htmlspecialchars($item['TieuDe']); ?></h5>
                     </a>
-                    <p class="mb-3 text-sm text-gray-600"><?php echo htmlspecialchars(substr($item['NoiDung'], 0, 150)) . '...'; ?></p>
+                    <p class="mb-3 text-sm text-gray-600"><?php 
+                        $plainText = strip_tags($item['NoiDung']);
+                        echo htmlspecialchars(substr($plainText, 0, 150)) . '...'; 
+                    ?></p>
                     <a href="/manage-htsv/news/detail.php?id=<?php echo $item['Id']; ?>" 
                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#4a90e2] rounded-lg hover:bg-[#2d5a8e] focus:ring-4 focus:ring-[#e3f2fd] transition duration-300">
                         Đọc thêm

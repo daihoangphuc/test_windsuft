@@ -128,14 +128,21 @@ require_once '../../layouts/admin_header.php';
             <div class="relative" style="height: 300px;">
                 <canvas id="attendanceChart"></canvas>
                 <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                    <div class="text-3xl font-bold text-gray-700"  style="margin-top: -30px;"> 
+                    <div class="text-3xl font-bold text-gray-700" style="margin-top: -30px;"> 
                         <?php 
                         $total = array_sum($attendanceStats['data']['values']);
-                        echo $total;
+                        if ($activity['TrangThai'] == 0) {
+                            echo number_format($total); // Hiển thị tổng số đăng ký cho hoạt động sắp diễn ra
+                        } else {
+                            // Tính tỷ lệ tham gia
+                            $attended = $attendanceStats['data']['values'][0]; // Số người tham gia
+                            $rate = $total > 0 ? round(($attended / $total) * 100) : 0;
+                            echo $rate . '%';
+                        }
                         ?>
                     </div>
                     <div class="text-sm text-gray-500">
-                        <?php echo $activity['TrangThai'] == 0 ? 'Tổng đăng ký' : 'Tổng tham gia'; ?>
+                        <?php echo $activity['TrangThai'] == 0 ? 'Tổng đăng ký' : 'Tỷ lệ tham gia'; ?>
                     </div>
                 </div>
             </div>
